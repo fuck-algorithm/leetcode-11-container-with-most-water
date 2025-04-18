@@ -147,6 +147,7 @@ const AlgorithmAnimation: React.FC = () => {
             animationSpeed={state.animationSpeed}
             setSpeed={setSpeed}
             description={currentFrame?.description ?? '准备开始算法动画'}
+            onRandomize={handleRandomHeights}
           />
         </div>
       </div>

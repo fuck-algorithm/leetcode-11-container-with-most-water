@@ -77,6 +77,19 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
         >
           重置
         </button>
+        
+        {onRandomize && (
+          <button 
+            style={{
+              ...styles.button,
+              backgroundColor: '#e67e22'
+            }}
+            onClick={onRandomize}
+            title="生成随机数据"
+          >
+            随机
+          </button>
+        )}
       </div>
       
       <div style={styles.speedControl}>
