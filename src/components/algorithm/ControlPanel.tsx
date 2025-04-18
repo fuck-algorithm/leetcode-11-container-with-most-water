@@ -11,6 +11,7 @@ interface ControlPanelProps {
   animationSpeed: number;
   setSpeed: (speed: number) => void;
   description: string;
+  onRandomize?: () => void;
 }
 
 const ControlPanel: React.FC<ControlPanelProps> = ({
@@ -23,7 +24,8 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
   totalFrames,
   animationSpeed,
   setSpeed,
-  description
+  description,
+  onRandomize
 }) => {
   return (
     <div className="control-panel" style={styles.container}>
