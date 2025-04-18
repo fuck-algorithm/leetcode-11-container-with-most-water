@@ -1,0 +1,35 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches:
+      - main # Or your default branch
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # Required to push to gh-pages branch
+    steps:
+      - name: Checkout 🛎️
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js 🏗️
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20' # Use the Node.js version appropriate for your project
+
+      - name: Install dependencies 📦
+        run: npm install
+
+      - name: Build project 🔨
+        run: npm run build
+
+      - name: Deploy to GitHub Pages 🚀
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./dist # The directory the build script outputs to
+          # publish_branch: gh-pages # The branch the action should deploy to. Defaults to gh-pages.
+          # user_name: 'github-actions[bot]' # Optional: The name to use for the deploy commit
+          # user_email: 'github-actions[bot]@users.noreply.github.com' # Optional: The email to use for the deploy commit 
