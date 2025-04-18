@@ -3,6 +3,7 @@ import VerticalBars from './VerticalBars';
 import WaterContainer from './WaterContainer';
 import ControlPanel from './ControlPanel';
 import { useAlgorithmAnimation } from '../../hooks/useAlgorithmAnimation';
+import { generateRandomHeights } from '../../utils/algorithmUtils';
 
 const AlgorithmAnimation: React.FC = () => {
   const [dimensions, setDimensions] = useState({
@@ -70,6 +71,14 @@ const AlgorithmAnimation: React.FC = () => {
       alert('解析高度数组失败，请检查格式');
     }
   };
+
+  // 随机生成高度数组
+  const handleRandomHeights = () => {
+    const randomHeights = generateRandomHeights();
+    setHeightArray(randomHeights);
+    // 更新输入框显示
+    setCustomHeights(randomHeights.join(', '));
+  };
   
   return (
     <div style={styles.container}>
@@ -83,6 +92,21 @@ const AlgorithmAnimation: React.FC = () => {
           placeholder="输入高度数组，如: 1,8,6,2,5,4,8,3,7"
           style={styles.customInput}
         />
+        <button 
+          onClick={handleRandomHeights}
+          title="生成随机数据"
+          style={{
+            ...styles.customButton,
+            backgroundColor: '#3498db',
+            fontSize: '18px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            width: '50px'
+          }}
+        >
+          🎲
+        </button>
         <button 
           onClick={handleCustomHeights}
           style={styles.customButton}
