@@ -1,54 +1,65 @@
-# React + TypeScript + Vite
+# 盛最多水的容器 - 算法可视化
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+这是一个基于React和D3.js的算法可视化项目，用于演示LeetCode第11题"盛最多水的容器"的解法。通过交互式动画展示双指针法解决问题的过程，帮助理解算法原理。
 
-Currently, two official plugins are available:
+## 项目特点
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- 响应式设计，适配各种屏幕尺寸
+- 交互式动画控制，包括播放/暂停/步进/重置
+- 自定义输入，可测试不同的高度数组
+- 直观的水容器可视化展示
+- 详细的算法步骤说明
 
-## Expanding the ESLint configuration
+## 算法介绍
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+"盛最多水的容器"问题：给定一个正整数数组，其中每个元素代表坐标轴上的一个点的高度，找出其中的两个点，使得它们与x轴共同构成的容器可以容纳最多的水。
 
-```js
-export default tseslint.config({
-  extends: [
-    // Remove ...tseslint.configs.recommended and replace with this
-    ...tseslint.configs.recommendedTypeChecked,
-    // Alternatively, use this for stricter rules
-    ...tseslint.configs.strictTypeChecked,
-    // Optionally, add this for stylistic rules
-    ...tseslint.configs.stylisticTypeChecked,
-  ],
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
+本项目实现了双指针法解决此问题：
+1. 初始化左右指针分别指向数组的两端
+2. 计算当前指针对应的容器面积
+3. 移动指向较短高度的指针向内移动一步
+4. 重复步骤2-3直至两指针相遇
+5. 返回过程中找到的最大面积
+
+## 技术栈
+
+- React + TypeScript
+- D3.js (数据可视化)
+- Vite (构建工具)
+
+## 开发与构建
+
+```bash
+# 安装依赖
+npm install
+
+# 本地开发
+npm run dev
+
+# 构建生产版本
+npm run build
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## 项目结构
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default tseslint.config({
-  plugins: {
-    // Add the react-x and react-dom plugins
-    'react-x': reactX,
-    'react-dom': reactDom,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended typescript rules
-    ...reactX.configs['recommended-typescript'].rules,
-    ...reactDom.configs.recommended.rules,
-  },
-})
 ```
+/src
+  /components
+    /algorithm
+      AlgorithmAnimation.tsx  # 主动画组件
+      ControlPanel.tsx        # 播放控制面板
+      VerticalBars.tsx        # 垂直线组件
+      WaterContainer.tsx      # 水容器组件
+  /hooks
+    useAlgorithmAnimation.ts  # 动画控制钩子
+  /types
+    algorithm.ts              # 类型定义
+  /utils
+    algorithmUtils.ts         # 算法工具函数
+  App.tsx                     # 应用入口
+  main.tsx                    # 主渲染文件
+```
+
+## 许可证
+
+MIT
