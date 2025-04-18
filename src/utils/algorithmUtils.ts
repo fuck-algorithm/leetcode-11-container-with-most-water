@@ -87,4 +87,19 @@ export function getExampleFrames(): FrameSnapshot[] {
 // 获取默认高度数组
 export function getDefaultHeights(): number[] {
   return [1, 8, 6, 2, 5, 4, 8, 3, 7];
+}
+
+// 生成随机高度数组
+export function generateRandomHeights(minLength = 5, maxLength = 15): number[] {
+  // 随机确定数组长度
+  const length = Math.floor(Math.random() * (maxLength - minLength + 1)) + minLength;
+  
+  // 生成随机高度数组
+  const heights: number[] = [];
+  for (let i = 0; i < length; i++) {
+    // 高度范围1-15
+    heights.push(Math.floor(Math.random() * 15) + 1);
+  }
+  
+  return heights;
 } 
