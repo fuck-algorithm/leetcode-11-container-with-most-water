@@ -42,3 +42,57 @@ body {
 .text-center {
   text-align: center;
 }
+
+.app-header {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 16px;
+  background-color: #ffffff;
+  border-bottom: 1px solid #e9ecef;
+  min-height: 52px;
+}
+
+.app-title {
+  flex: 1 1 auto;
+  text-align: center;
+  font-size: 18px;
+  font-weight: 600;
+  color: #2c3e50;
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.header-link {
+  flex: 0 0 auto;
+  color: #2c3e50;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 14px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.header-link:hover {
+  color: #1a73e8;
+  background-color: #f1f3f5;
+}
+
+.github-icon {
+  width: 24px;
+  height: 24px;
+  display: block;
+}
+
+/* 窄屏：标题隐藏，仅保留链接 */
+@media (max-width: 600px) {
+  .app-title {
+    display: none;
+  }
+}
