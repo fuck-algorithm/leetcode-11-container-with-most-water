@@ -1,0 +1,146 @@
+/* src/components/algorithm/AlgorithmAnimation.css */
+
+.algo-layout {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 8px;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* 顶部输入栏：固定高度 */
+.input-bar {
+  flex: 0 0 auto;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.input-bar .custom-input {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: 1px solid #ddd;
+  font-size: 14px;
+}
+
+.input-bar .input-btn {
+  flex: 0 0 auto;
+  padding: 8px 16px;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: opacity 0.2s;
+}
+
+.input-bar .input-btn:hover {
+  opacity: 0.85;
+}
+
+.input-bar .input-btn.apply {
+  background-color: #2ecc71;
+}
+
+.input-bar .input-btn.random {
+  background-color: #3498db;
+  width: 44px;
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 主体：左可视化 + 右侧栏 */
+.algo-main {
+  flex: 1 1 auto;
+  display: flex;
+  gap: 8px;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* 左可视化区：占满剩余空间 */
+.viz-pane {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+  min-height: 0;
+  background-color: #fff;
+  border: 1px solid #eee;
+  border-radius: 8px;
+  padding: 8px;
+  overflow: hidden;
+}
+
+.viz-svg-wrap {
+  flex: 1 1 0;
+  min-height: 0;
+  display: flex;
+  align-items: stretch;
+  justify-content: stretch;
+  overflow: hidden;
+}
+
+.viz-svg-wrap > svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.viz-placeholder {
+  flex: 1 1 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #999;
+  font-size: 14px;
+}
+
+/* 右侧栏：固定宽度，局部可滚动 */
+.side-pane {
+  flex: 0 0 340px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 0;
+  overflow: auto;
+}
+
+.algo-explanation {
+  flex: 0 0 auto;
+  background-color: #f9f9f9;
+  padding: 12px;
+  border-radius: 8px;
+  line-height: 1.6;
+  font-size: 13px;
+}
+
+.algo-explanation h3 {
+  margin-bottom: 6px;
+  font-size: 14px;
+  color: #2c3e50;
+}
+
+/* 窄屏：主体转纵向，侧栏在下且限高 */
+@media (max-width: 860px) {
+  .algo-main {
+    flex-direction: column;
+  }
+
+  .viz-pane {
+    flex: 1 1 auto;
+  }
+
+  .side-pane {
+    flex: 0 0 auto;
+    max-height: 42vh;
+    overflow: auto;
+  }
+}
