@@ -68,7 +68,7 @@ const AlgorithmAnimation: React.FC = () => {
         return;
       }
       setHeightArray(heights);
-    } catch (error) {
+    } catch {
       alert('解析高度数组失败，请检查格式');
     }
   };
