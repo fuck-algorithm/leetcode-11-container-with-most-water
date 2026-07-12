@@ -1,0 +1,103 @@
+/* src/components/algorithm/ControlPanel.css */
+
+.control-panel {
+  padding: 12px;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+  flex: 0 0 auto;
+}
+
+.cp-progress-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.cp-progress {
+  flex: 1;
+  height: 10px;
+  background-color: #e0e0e0;
+  border-radius: 5px;
+  overflow: hidden;
+}
+
+.cp-progress-bar {
+  height: 100%;
+  background-color: #3498db;
+  transition: width 0.3s ease;
+}
+
+.cp-frame-counter {
+  font-size: 13px;
+  color: #666;
+  min-width: 60px;
+  text-align: right;
+}
+
+.cp-description {
+  padding: 8px 10px;
+  background-color: #fff;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+  min-height: 36px;
+  line-height: 1.5;
+}
+
+.cp-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.cp-button {
+  flex: 1;
+  padding: 8px 10px;
+  background-color: #3498db;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: opacity 0.2s;
+}
+
+.cp-button:hover {
+  opacity: 0.85;
+}
+
+.cp-button:disabled {
+  background-color: #bdc3c7;
+  cursor: not-allowed;
+  opacity: 1;
+}
+
+.cp-button.random {
+  background-color: #e67e22;
+}
+
+.cp-speed-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.cp-label {
+  font-size: 13px;
+  color: #666;
+}
+
+.cp-slider {
+  flex: 1;
+}
+
+.cp-speed-display {
+  font-size: 13px;
+  color: #666;
+  min-width: 64px;
+  text-align: right;
+}
