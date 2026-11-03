@@ -91,6 +91,16 @@ describe('双指针动画快照', () => {
     expect(move.narration).toContain('下一帧才计算');
   });
 
+  it('等高边界移动时明确说明等高分支和决策原因', () => {
+    const frame = generateTwoPointerFrames([15, 1, 15, 1, 15]).find((item) =>
+      item.operation === 'move' && item.rightPointer === 1,
+    );
+    expect(frame.operationLabel).toBe('移动右指针');
+    expect(frame.narration).toContain('与左端等高');
+    expect(frame.decision).toContain('与左端等高');
+    expect(frame.decision).toContain('排除索引 2');
+  });
+
   it('穷举小输入时每次比较和移动状态连续、最大值始终正确', () => {
     for (let length = 2; length <= 6; length += 1) {
       const combinations = 4 ** length;
