@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { AlgorithmState, FrameSnapshot } from '../types/algorithm';
+import { MOTION, motionDuration, playbackFrameDelay } from '../features/animation/motion';
 import { generateBruteForceFrames, generateTwoPointerFrames, getDefaultHeights } from '../utils/algorithmUtils';
 
 export function useAlgorithmAnimation() {
@@ -51,12 +52,14 @@ export function useAlgorithmAnimation() {
       
       // 如果未到最后一帧，继续播放
       if (state.currentFrame < state.totalFrames - 1) {
+        const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        const transitionMs = motionDuration(MOTION.state, state.animationSpeed, reducedMotion);
         timerRef.current = window.setTimeout(() => {
           setState(prev => ({
             ...prev,
             currentFrame: prev.currentFrame + 1
           }));
-        }, state.animationSpeed);
+        }, playbackFrameDelay(state.animationSpeed, transitionMs, reducedMotion));
       } else {
         // 到达最后一帧，停止播放
         setState(prev => ({

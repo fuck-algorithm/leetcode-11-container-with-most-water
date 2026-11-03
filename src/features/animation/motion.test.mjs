@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { MOTION, motionDuration, normalizeNodeStatus, resolveLegend } from './motion.ts';
+import { MOTION, motionDuration, normalizeNodeStatus, playbackFrameDelay, resolveLegend } from './motion.ts';
 
 describe('motion tokens', () => {
   it('defines bounded semantic durations', () => {
@@ -20,5 +20,12 @@ describe('motion tokens', () => {
     expect(motionDuration(MOTION.move, 400, false)).toBe(160);
     expect(motionDuration(MOTION.move, 1600, false)).toBe(180);
     expect(motionDuration(MOTION.move, 100, false)).toBe(40);
+  });
+
+  it('adds a visible dwell after every frame transition', () => {
+    expect(playbackFrameDelay(200, 80, false)).toBe(280);
+    expect(playbackFrameDelay(800, 320, false)).toBe(1120);
+    expect(playbackFrameDelay(1200, 240, false)).toBe(1440);
+    expect(playbackFrameDelay(800, 144, true)).toBe(800);
   });
 });

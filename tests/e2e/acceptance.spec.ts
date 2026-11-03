@@ -181,7 +181,28 @@ test('E2E-011 多解法视图隔离且均可完整播放', async ({ page }, test
   await page.screenshot({ path: testInfo.outputPath('reduced-motion.png') });
 });
 
-test('E2E-016 1x 双指针动画完整播放并输出录屏', async ({ page }) => {
+test('E2E-016 自动播放的每帧之间有可见停顿', async ({ page }) => {
+  await page.goto('/');
+  await page.getByLabel('播放速度').selectOption('200');
+  const intervals = await page.evaluate(() => new Promise<number[]>((resolve) => {
+    const frame = document.querySelector('.step-indicator strong')!;
+    let previous = performance.now();
+    const elapsed: number[] = [];
+    const observer = new MutationObserver(() => {
+      elapsed.push(performance.now() - previous);
+      previous = performance.now();
+      if (elapsed.length === 3) {
+        observer.disconnect();
+        resolve(elapsed);
+      }
+    });
+    observer.observe(frame, { childList: true, characterData: true, subtree: true });
+    document.querySelector<HTMLButtonElement>('.play-button')!.click();
+  }));
+  expect(intervals.every((interval) => interval >= 250)).toBe(true);
+});
+
+test('E2E-017 1x 双指针动画完整播放并输出录屏', async ({ page }) => {
   await page.goto('/');
   await page.getByLabel('播放速度').selectOption('800');
   await page.getByRole('button', { name: '播放' }).click();

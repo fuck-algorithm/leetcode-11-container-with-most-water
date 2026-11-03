@@ -12,6 +12,10 @@ export function motionDuration(baseMs: number, dwellMs: number, reducedMotion: b
   const preferred = baseMs * (800 / Math.max(1, dwellMs));
   return Math.max(0, Math.min(preferred, dwellMs * 0.4));
 }
+
+export function playbackFrameDelay(dwellMs: number, transitionMs: number, reducedMotion: boolean): number {
+  return dwellMs + (reducedMotion ? 0 : transitionMs);
+}
 export function normalizeNodeStatus(status: NodeStatus): NodeStatus { return status; }
 export function resolveLegend() {
   return [
