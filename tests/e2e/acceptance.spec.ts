@@ -199,7 +199,7 @@ test('E2E-016 自动播放的每帧之间有可见停顿', async ({ page }) => {
     observer.observe(frame, { childList: true, characterData: true, subtree: true });
     document.querySelector<HTMLButtonElement>('.play-button')!.click();
   }));
-  expect(intervals.every((interval) => interval >= 250)).toBe(true);
+  expect(intervals.every((interval) => interval >= 550)).toBe(true);
 });
 
 test('E2E-017 1x 双指针动画完整播放并输出录屏', async ({ page }) => {

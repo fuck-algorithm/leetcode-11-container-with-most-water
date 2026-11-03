@@ -23,7 +23,8 @@ describe('motion tokens', () => {
   });
 
   it('adds a visible dwell after every frame transition', () => {
-    expect(playbackFrameDelay(200, 80, false)).toBe(280);
+    expect(playbackFrameDelay(200, 80, false)).toBe(580);
+    expect(playbackFrameDelay(400, 160, false)).toBe(660);
     expect(playbackFrameDelay(800, 320, false)).toBe(1120);
     expect(playbackFrameDelay(1200, 240, false)).toBe(1440);
     expect(playbackFrameDelay(800, 144, true)).toBe(800);
