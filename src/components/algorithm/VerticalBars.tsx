@@ -26,6 +26,7 @@ const palette = { idle: '#dce7e4', compare: '#e5a93d', visited: '#a9c9bf', best:
 const VerticalBars: React.FC<VerticalBarsProps> = ({ heights, leftPointer, rightPointer, candidateLeftPointer, candidateRightPointer, bestLeftPointer, bestRightPointer, currentArea, limitingHeight, currentWidth, eliminatedRange, maxArea, dwellMs, isDone, showCandidate }) => {
   const svgRef = useRef<SVGSVGElement | null>(null);
   const zoomBehaviorRef = useRef<d3.ZoomBehavior<SVGSVGElement, unknown> | null>(null);
+  const viewBoxSizeRef = useRef({ width: 0, height: 0 });
   const [zoomLevel, setZoomLevel] = useState(1);
   const [size, setSize] = useState({ width: 0, height: 0 });
 
@@ -49,8 +50,9 @@ const VerticalBars: React.FC<VerticalBarsProps> = ({ heights, leftPointer, right
     const height = Math.max(220, size.height);
     const compact = size.height < 360;
     const narrow = size.width <= 760;
+    const previousSize = viewBoxSizeRef.current;
     const margin = { top: compact ? 24 : narrow ? 178 : 165, right: 36, bottom: compact ? 45 : 70, left: 36 };
-    const plotWidth = width - margin.left - margin.right;
+    const plotWidth = Math.max(1, width - margin.left - margin.right);
     const plotHeight = Math.max(1, height - margin.top - margin.bottom);
     const maxHeight = Math.max(1, ...heights);
     const retired = eliminatedRange ?? [0, -1];
@@ -80,7 +82,14 @@ const VerticalBars: React.FC<VerticalBarsProps> = ({ heights, leftPointer, right
     });
     zoomBehaviorRef.current = zoom;
     svg.call(zoom).on('dblclick.zoom', null);
-    scene.attr('transform', d3.zoomTransform(element).toString());
+    const previousTransform = d3.zoomTransform(element);
+    const transform = previousTransform.k === 1 && previousTransform.x === 0 && previousTransform.y === 0
+      ? d3.zoomIdentity.translate(width * 0.02, height * 0.02)
+      : d3.zoomIdentity.translate(previousTransform.x * width / (previousSize.width || width), previousTransform.y * height / (previousSize.height || height)).scale(previousTransform.k);
+    const constrainedTransform = zoom.constrain()(transform, [[0, 0], [width, height]], [[0, 0], [width, height]]);
+    viewBoxSizeRef.current = { width, height };
+    svg.call(zoom.transform, constrainedTransform);
+    scene.attr('transform', constrainedTransform.toString());
 
     const nodeLayer = scene.select<SVGGElement>('.layer-nodes');
     const defs = scene.selectAll<SVGDefsElement, number>('defs').data([0]).join('defs');

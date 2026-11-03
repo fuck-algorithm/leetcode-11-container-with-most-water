@@ -164,14 +164,20 @@ test('E2E-008 拖动进度范围', async ({ page }) => {
   await expect(page.locator('.step-indicator strong')).toHaveText('6');
 });
 
-test('E2E-009 画布缩放且步进不重置视角', async ({ page }) => {
+test('E2E-009 画布缩放后步进和改变视口均不重置或污染视角', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto('/');
   const scene = page.locator('.scene');
   await page.getByLabel('放大画布').click();
-  await expect.poll(() => scene.getAttribute('transform')).not.toBe('translate(0,0) scale(1)');
   await expect.poll(() => scene.getAttribute('transform')).toContain('scale(1.2)');
   await page.getByLabel('下一步').click();
   await expect.poll(() => scene.getAttribute('transform')).toContain('scale(1.2)');
+
+  await page.setViewportSize({ width: 390, height: 640 });
+  await expect(page.locator('.canvas-stage')).toHaveClass(/compact-stage/);
+  await expect.poll(() => scene.getAttribute('transform')).toContain('scale(1.2)');
+  await expect(scene).not.toHaveAttribute('transform', /NaN|Infinity/);
+  await expect(page.locator('.bar-shape').first()).toHaveAttribute('height', /\d/);
 });
 
 test('E2E-010 题目描述和算法思路是两个独立弹窗', async ({ page }) => {
