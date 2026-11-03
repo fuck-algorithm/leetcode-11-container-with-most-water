@@ -62,6 +62,8 @@ const VerticalBars: React.FC<VerticalBarsProps> = ({ heights, leftPointer, right
     const visualRight = candidateRightPointer ?? rightPointer;
     const leftX = startX + visualLeft * slot + barWidth / 2;
     const rightX = startX + visualRight * slot + barWidth / 2;
+    const waterLeft = leftX + barWidth / 2;
+    const waterRight = rightX - barWidth / 2;
     const currentHeight = Math.min(heights[visualLeft] ?? 0, heights[visualRight] ?? 0);
     const waterTop = y(limitingHeight ?? currentHeight);
 
@@ -111,8 +113,8 @@ const VerticalBars: React.FC<VerticalBarsProps> = ({ heights, leftPointer, right
       (enter) => enter.append('rect').attr('class', 'water-area').attr('opacity', 0),
       (update) => update,
       (exit) => fadeOutAndRemove(exit),
-    ).interrupt('exit').transition('water').duration(duration).attr('x', leftX).attr('y', waterTop)
-      .attr('width', Math.max(0, rightX - leftX)).attr('height', Math.max(0, plotBottom - waterTop)).attr('opacity', 1);
+    ).interrupt('exit').transition('water').duration(duration).attr('x', waterLeft).attr('y', waterTop)
+      .attr('width', Math.max(0, waterRight - waterLeft)).attr('height', Math.max(0, plotBottom - waterTop)).attr('opacity', 1);
 
     const data = heights.map((value, index) => {
       const isLeft = index === leftPointer;
@@ -168,7 +170,7 @@ const VerticalBars: React.FC<VerticalBarsProps> = ({ heights, leftPointer, right
     const area = currentArea || currentHeight * (visualRight - visualLeft);
     const areaLabel = scene.selectAll<SVGTextElement, number>('text.area-label').data(candidate ? [area] : []);
     areaLabel.join('text').attr('class', 'area-label').attr('text-anchor', 'middle')
-      .attr('x', (leftX + rightX) / 2).attr('y', Math.max(30, waterTop - 13)).text(`面积 ${limitingHeight ?? currentHeight} × ${currentWidth ?? (visualRight - visualLeft)} = ${area}`);
+      .attr('x', (leftX + rightX) / 2).attr('y', Math.max(margin.top + 14, waterTop - 13)).text(`面积 ${limitingHeight ?? currentHeight} × ${currentWidth ?? (visualRight - visualLeft)} = ${area}`);
     scene.selectAll<SVGTextElement, number>('text.best-label').data([maxArea]).join('text').attr('class', 'best-label')
       .attr('x', width - margin.right).attr('y', 27).attr('text-anchor', 'end').text(`最大面积 ${maxArea}`);
     scene.selectAll<SVGLineElement, number>('line.baseline').data([0]).join('line').attr('class', 'baseline')

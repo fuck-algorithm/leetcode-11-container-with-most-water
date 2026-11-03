@@ -85,6 +85,14 @@ test('E2E-006 操作、解说和画布随步骤同步', async ({ page }) => {
   await expect(page.locator('.operation-badge')).toHaveAttribute('data-operation', 'compare');
   await expect(narration).not.toHaveText(before ?? '');
   await expect(page.locator('.water-area')).toHaveCount(1);
+  await expect.poll(() => page.locator('.water-area').evaluate((water) => {
+    const leftBar = document.querySelector<SVGGElement>('.bar-node[data-node-id="bar-0"]')!;
+    const rightBar = document.querySelector<SVGGElement>('.bar-node[data-node-id="bar-8"]')!;
+    const leftShape = leftBar.querySelector('rect')!;
+    const left = Number(leftBar.getAttribute('transform')!.split('(')[1].split(',')[0]) + Number(leftShape.getAttribute('width'));
+    const right = Number(rightBar.getAttribute('transform')!.split('(')[1].split(',')[0]);
+    return Math.abs(Number(water.getAttribute('x')) - left) < 0.1 && Math.abs(Number(water.getAttribute('x')) + Number(water.getAttribute('width')) - right) < 0.1;
+  })).toBe(true);
   await expect(page.locator('.intuition-strip')).toContainText('面积 =');
   await expect(page.locator('.area-label')).toContainText('面积 1 × 8 = 8');
   await expect(page.locator('.intuition-strip')).toContainText('水位');
