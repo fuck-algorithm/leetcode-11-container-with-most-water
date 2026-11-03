@@ -73,11 +73,17 @@ const VerticalBars: React.FC<VerticalBarsProps> = ({ heights, leftPointer, right
 
     svg.attr('viewBox', `0 0 ${width} ${height}`).attr('preserveAspectRatio', 'none');
     const scene = svg.selectAll<SVGGElement, number>('g.scene').data([0]).join('g').attr('class', 'scene');
+    scene.attr('data-viewbox-width', width).attr('data-viewbox-height', height);
     scene.selectAll<SVGGElement, number>('.layer-containers').data([0]).join('g').attr('class', 'layer-containers');
     scene.selectAll<SVGGElement, number>('.layer-nodes').data([0]).join('g').attr('class', 'layer-nodes');
     const fadeOutAndRemove = <GElement extends d3.BaseType, Datum, PElement extends d3.BaseType, PDatum>(selection: d3.Selection<GElement, Datum, PElement, PDatum>) => selection.transition('exit').duration(duration).attr('opacity', 0).on('end.cleanup', function () { d3.select(this).remove(); });
     const zoom = d3.zoom<SVGSVGElement, unknown>().scaleExtent([0.65, 3]).on('zoom', (event) => {
       scene.attr('transform', event.transform.toString());
+      const sceneSize = viewBoxSizeRef.current;
+      element.closest('.canvas-stage')?.classList.toggle(
+        'zoomed-stage',
+        event.transform.k > 1.4 || Math.abs(event.transform.x) > sceneSize.width * 0.18 || Math.abs(event.transform.y) > sceneSize.height * 0.18,
+      );
       setZoomLevel(event.transform.k);
     });
     zoomBehaviorRef.current = zoom;
@@ -90,6 +96,10 @@ const VerticalBars: React.FC<VerticalBarsProps> = ({ heights, leftPointer, right
     viewBoxSizeRef.current = { width, height };
     svg.call(zoom.transform, constrainedTransform);
     scene.attr('transform', constrainedTransform.toString());
+    element.closest('.canvas-stage')?.classList.toggle(
+      'zoomed-stage',
+      constrainedTransform.k > 1.4 || Math.abs(constrainedTransform.x) > width * 0.18 || Math.abs(constrainedTransform.y) > height * 0.18,
+    );
 
     const nodeLayer = scene.select<SVGGElement>('.layer-nodes');
     const defs = scene.selectAll<SVGDefsElement, number>('defs').data([0]).join('defs');
@@ -186,7 +196,7 @@ const VerticalBars: React.FC<VerticalBarsProps> = ({ heights, leftPointer, right
       .attr('y', width <= 760 ? margin.top - 10 : waterTop - 12)
       .text(`面积 ${limitingHeight ?? currentHeight} × ${currentWidth ?? (visualRight - visualLeft)} = ${area}`);
     scene.selectAll<SVGTextElement, number>('text.best-label').data([maxArea]).join('text').attr('class', 'best-label')
-      .attr('x', width - margin.right).attr('y', 27).attr('text-anchor', 'end').text(`最大面积 ${maxArea}`);
+      .attr('x', width - margin.right).attr('y', margin.top <= 30 ? margin.top + 14 : 27).attr('text-anchor', 'end').text(`最大面积 ${maxArea}`);
     scene.selectAll<SVGLineElement, number>('line.baseline').data([0]).join('line').attr('class', 'baseline')
       .attr('x1', margin.left).attr('x2', width - margin.right).attr('y1', plotBottom).attr('y2', plotBottom);
   }, [heights, leftPointer, rightPointer, candidateLeftPointer, candidateRightPointer, currentArea, limitingHeight, currentWidth, eliminatedRange, maxArea, bestLeftPointer, bestRightPointer, dwellMs, isDone, showCandidate, size]);

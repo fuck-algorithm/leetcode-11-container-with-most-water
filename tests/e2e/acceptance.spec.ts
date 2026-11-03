@@ -172,11 +172,18 @@ test('E2E-009 画布缩放后步进和改变视口均不重置或污染视角', 
   await expect.poll(() => scene.getAttribute('transform')).toContain('scale(1.2)');
   await page.getByLabel('下一步').click();
   await expect.poll(() => scene.getAttribute('transform')).toContain('scale(1.2)');
+  await expect(page.locator('.intuition-strip')).toBeVisible();
+  for (let i = 0; i < 5; i += 1) await page.getByLabel('放大画布').click();
+  await expect(page.locator('.canvas-stage')).toHaveClass(/zoomed-stage/);
+  await expect(page.locator('.intuition-strip')).toBeHidden();
+  await page.getByLabel('重置画布视图').click();
+  await expect(page.locator('.canvas-stage')).not.toHaveClass(/zoomed-stage/);
+  await expect(page.locator('.intuition-strip')).toBeVisible();
 
   await page.setViewportSize({ width: 390, height: 640 });
   await expect(page.locator('.canvas-stage')).toHaveClass(/compact-stage/);
-  await expect.poll(() => scene.getAttribute('transform')).toContain('scale(1.2)');
-  await expect(scene).not.toHaveAttribute('transform', /NaN|Infinity/);
+  await expect.poll(() => scene.getAttribute('transform')).not.toMatch(/NaN|Infinity/);
+  await expect.poll(() => scene.getAttribute('transform')).toMatch(/scale\((0\.[6-9]\d*|1(?:\.\d+)?)\)/);
   await expect(page.locator('.bar-shape').first()).toHaveAttribute('height', /\d/);
 });
 

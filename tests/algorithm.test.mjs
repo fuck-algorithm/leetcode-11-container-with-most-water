@@ -91,6 +91,38 @@ describe('双指针动画快照', () => {
     expect(move.narration).toContain('下一帧才计算');
   });
 
+  it('穷举小输入时每次比较和移动状态连续、最大值始终正确', () => {
+    for (let length = 2; length <= 6; length += 1) {
+      const combinations = 4 ** length;
+      for (let encoded = 0; encoded < combinations; encoded += 1) {
+        let value = encoded;
+        const heights = Array.from({ length }, () => {
+          const height = value % 4;
+          value = Math.floor(value / 4);
+          return height;
+        });
+        const frames = generateTwoPointerFrames(heights);
+        const compares = frames.filter((frame) => frame.operation === 'compare');
+        const moves = frames.filter((frame) => frame.operation === 'move');
+        expect(compares).toHaveLength(length - 1);
+        expect(moves).toHaveLength(length - 1);
+        let prefixMaximum = 0;
+        compares.forEach((frame, index) => {
+          expect(frame.currentWidth).toBe(frame.rightPointer - frame.leftPointer);
+          expect(frame.limitingHeight).toBe(Math.min(heights[frame.leftPointer], heights[frame.rightPointer]));
+          expect(frame.currentArea).toBe(frame.limitingHeight * frame.currentWidth);
+          expect(frame.maxArea).toBe(prefixMaximum);
+          prefixMaximum = Math.max(prefixMaximum, frame.currentArea);
+          const following = moves[index];
+          expect([following.candidateLeftPointer, following.candidateRightPointer]).toEqual([frame.leftPointer, frame.rightPointer]);
+          expect(following.maxArea).toBe(prefixMaximum);
+          expect(following.variables.res).toBe(prefixMaximum);
+        });
+        expect(frames.at(-1).maxArea).toBe(bruteForce(heights));
+      }
+    }
+  });
+
   it('短数组和重复高度也得出正确结果', () => {
     for (const heights of [[1, 1], [0, 0], [5, 1, 5], [4, 3, 2, 1]]) {
       const frames = generateTwoPointerFrames(heights);

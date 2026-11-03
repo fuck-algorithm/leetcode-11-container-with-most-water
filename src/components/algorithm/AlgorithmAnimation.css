@@ -157,6 +157,12 @@
 .canvas-stage.short-stage .canvas-tools { display: none; }
 .canvas-stage.short-stage .intuition-strip { position: relative; top: auto; margin: 4px 8px 0; }
 .canvas-stage.short-stage .bars-svg { position: absolute; inset: 38px 0 0; height: calc(100% - 38px); }
+.canvas-stage.zoomed-stage .intuition-strip,
+.canvas-stage.zoomed-stage .step-explanation,
+.canvas-stage.zoomed-stage .canvas-legend { opacity: 0; pointer-events: none; }
+.canvas-stage.zoomed-stage .intuition-strip { visibility: hidden; }
+.canvas-stage.zoomed-stage .canvas-legend { visibility: hidden; }
+.canvas-stage.zoomed-stage .step-explanation { visibility: hidden; }
 
 
 .bars-svg .eliminated-range { fill: #f5e7dc; fill-opacity: .42; stroke: #c7784c; stroke-width: 1.5; stroke-dasharray: 5 4; pointer-events: none; }
