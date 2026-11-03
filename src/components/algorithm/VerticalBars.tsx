@@ -12,6 +12,9 @@ interface VerticalBarsProps {
   bestLeftPointer?: number;
   bestRightPointer?: number;
   currentArea: number;
+  limitingHeight?: number;
+  currentWidth?: number;
+  eliminatedRange?: [number, number];
   maxArea: number;
   dwellMs: number;
   isDone: boolean;
@@ -20,7 +23,7 @@ interface VerticalBarsProps {
 
 const palette = { idle: '#dce7e4', compare: '#e5a93d', visited: '#a9c9bf', best: '#27845e' };
 
-const VerticalBars: React.FC<VerticalBarsProps> = ({ heights, leftPointer, rightPointer, candidateLeftPointer, candidateRightPointer, bestLeftPointer, bestRightPointer, currentArea, maxArea, dwellMs, isDone, showCandidate }) => {
+const VerticalBars: React.FC<VerticalBarsProps> = ({ heights, leftPointer, rightPointer, candidateLeftPointer, candidateRightPointer, bestLeftPointer, bestRightPointer, currentArea, limitingHeight, currentWidth, eliminatedRange, maxArea, dwellMs, isDone, showCandidate }) => {
   const svgRef = useRef<SVGSVGElement | null>(null);
   const zoomBehaviorRef = useRef<d3.ZoomBehavior<SVGSVGElement, unknown> | null>(null);
   const [zoomLevel, setZoomLevel] = useState(1);
@@ -48,6 +51,7 @@ const VerticalBars: React.FC<VerticalBarsProps> = ({ heights, leftPointer, right
     const plotWidth = width - margin.left - margin.right;
     const plotHeight = height - margin.top - margin.bottom;
     const maxHeight = Math.max(1, ...heights);
+    const retired = eliminatedRange ?? [0, -1];
     const gap = Math.min(20, plotWidth / heights.length * 0.2);
     const barWidth = Math.max(8, (plotWidth - gap * (heights.length - 1)) / heights.length);
     const slot = barWidth + gap;
@@ -59,7 +63,7 @@ const VerticalBars: React.FC<VerticalBarsProps> = ({ heights, leftPointer, right
     const leftX = startX + visualLeft * slot + barWidth / 2;
     const rightX = startX + visualRight * slot + barWidth / 2;
     const currentHeight = Math.min(heights[visualLeft] ?? 0, heights[visualRight] ?? 0);
-    const waterTop = y(currentHeight);
+    const waterTop = y(limitingHeight ?? currentHeight);
 
     svg.attr('viewBox', `0 0 ${width} ${height}`).attr('preserveAspectRatio', 'none');
     const scene = svg.selectAll<SVGGElement, number>('g.scene').data([0]).join('g').attr('class', 'scene');
@@ -91,7 +95,17 @@ const VerticalBars: React.FC<VerticalBarsProps> = ({ heights, leftPointer, right
       .attr('dominant-baseline', 'middle').text((value) => String(value))
       .transition('grid').duration(duration).attr('y', (value) => y(value));
 
-    const showWater = showCandidate && visualRight > visualLeft && currentHeight > 0;
+    const showWater = showCandidate && visualRight > visualLeft && (limitingHeight ?? currentHeight) > 0;
+    const retiredOverlay = scene.selectAll<SVGRectElement, [number, number]>('rect.eliminated-range').data(
+      eliminatedRange && eliminatedRange[1] - eliminatedRange[0] >= 0 ? [eliminatedRange] : [],
+    );
+    retiredOverlay.join('rect')
+      .attr('class', 'eliminated-range')
+      .attr('x', (range) => startX + range[0] * slot)
+      .attr('y', margin.top)
+      .attr('width', (range) => (range[1] - range[0] + 1) * slot - gap)
+      .attr('height', plotBottom - margin.top)
+      .attr('data-range', (range) => `${range[0]}-${range[1]}`);
     const water = scene.selectAll<SVGRectElement, number>('rect.water-area').data(showWater ? [currentHeight] : []);
     water.join(
       (enter) => enter.append('rect').attr('class', 'water-area').attr('opacity', 0),
@@ -104,7 +118,8 @@ const VerticalBars: React.FC<VerticalBarsProps> = ({ heights, leftPointer, right
       const isLeft = index === leftPointer;
       const isRight = index === rightPointer;
       const isBest = index === bestLeftPointer || index === bestRightPointer;
-      const status = isDone && isBest ? 'best' : isLeft ? 'current' : isRight ? 'compare' : isBest ? 'best' : index < leftPointer || index > rightPointer ? 'visited' : 'idle';
+      const isEliminated = index >= retired[0] && index <= retired[1];
+      const status = isDone && isBest ? 'best' : isLeft ? 'current' : isRight ? 'compare' : isBest ? 'best' : isEliminated || index < leftPointer || index > rightPointer ? 'visited' : 'idle';
       return { id: `bar-${index}`, index, value, status };
     });
     const bars = nodeLayer.selectAll<SVGGElement, (typeof data)[number]>('g.bar-node').data(data, (item) => item.id).join(
@@ -150,15 +165,15 @@ const VerticalBars: React.FC<VerticalBarsProps> = ({ heights, leftPointer, right
     pointers.attr('data-status', (item) => item.index === leftPointer && item.index === rightPointer ? 'current' : item.id === 'pointer-left' ? 'current' : 'compare');
 
     const candidate = showCandidate && visualRight > visualLeft;
-    const area = currentHeight * (visualRight - visualLeft);
+    const area = currentArea || currentHeight * (visualRight - visualLeft);
     const areaLabel = scene.selectAll<SVGTextElement, number>('text.area-label').data(candidate ? [area] : []);
     areaLabel.join('text').attr('class', 'area-label').attr('text-anchor', 'middle')
-      .attr('x', (leftX + rightX) / 2).attr('y', Math.max(30, waterTop - 13)).text(`当前面积 ${area}`);
+      .attr('x', (leftX + rightX) / 2).attr('y', Math.max(30, waterTop - 13)).text(`面积 ${limitingHeight ?? currentHeight} × ${currentWidth ?? (visualRight - visualLeft)} = ${area}`);
     scene.selectAll<SVGTextElement, number>('text.best-label').data([maxArea]).join('text').attr('class', 'best-label')
       .attr('x', width - margin.right).attr('y', 27).attr('text-anchor', 'end').text(`最大面积 ${maxArea}`);
     scene.selectAll<SVGLineElement, number>('line.baseline').data([0]).join('line').attr('class', 'baseline')
       .attr('x1', margin.left).attr('x2', width - margin.right).attr('y1', plotBottom).attr('y2', plotBottom);
-  }, [heights, leftPointer, rightPointer, candidateLeftPointer, candidateRightPointer, currentArea, maxArea, bestLeftPointer, bestRightPointer, dwellMs, isDone, showCandidate, size]);
+  }, [heights, leftPointer, rightPointer, candidateLeftPointer, candidateRightPointer, currentArea, limitingHeight, currentWidth, eliminatedRange, maxArea, bestLeftPointer, bestRightPointer, dwellMs, isDone, showCandidate, size]);
 
   return (
     <>

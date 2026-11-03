@@ -30,6 +30,10 @@ export interface FrameSnapshot {
   maxArea: number;
   // 当前计算的面积
   currentArea: number;
+  limitingHeight?: number;
+  currentWidth?: number;
+  decision?: string;
+  eliminatedRange?: [number, number];
   // 是否为关键帧（如找到更大面积的时刻）
   isKeyFrame: boolean;
   // 当前操作说明

@@ -79,45 +79,52 @@ const AlgorithmAnimation: React.FC = () => {
       <div className="visual-workspace">
         <section className="canvas-card" aria-label={`${state.algorithmType === 'bruteForce' ? '暴力枚举' : '双指针'}算法画布`}>
           <header className="canvas-header">
-          <div className="canvas-heading">
-            <span className="eyebrow">{state.algorithmType === 'bruteForce' ? 'BRUTE FORCE · O(n²)' : 'TWO POINTERS · O(n)'}</span>
-            <h2>{state.algorithmType === 'bruteForce' ? '逐对枚举每一种左右边界组合' : '盛水面积如何被一步步缩小搜索范围'}</h2>
-          </div>
-          <div className="step-indicator"><span>STEP</span><strong>{state.currentFrame + 1}</strong><i>/</i>{state.totalFrames}</div>
-        </header>
+            <div className="canvas-heading">
+              <span className="eyebrow">{state.algorithmType === 'bruteForce' ? 'BRUTE FORCE · O(n²)' : 'TWO POINTERS · O(n)'}</span>
+              <h2>{state.algorithmType === 'bruteForce' ? '逐对枚举每一种左右边界组合' : '盛水面积如何被一步步缩小搜索范围'}</h2>
+            </div>
+            <div className="step-indicator"><span>STEP</span><strong>{state.currentFrame + 1}</strong><i>/</i>{state.totalFrames}</div>
+          </header>
           <div className="canvas-stage">
+            <div className="intuition-strip" aria-live="polite">
+              <span className="intuition-step">{frame?.operation === 'move' ? '为什么移动？' : frame?.operation === 'compare' ? '这一步怎么算？' : '读图提示'}</span>
+              <p>{frame?.decision ?? '容器面积 = 较短边高度 × 两边索引差；先从最宽的两端开始。'}</p>
+            </div>
             <VerticalBars
-            key={heightsKey}
-            heights={state.heightArray}
-            leftPointer={frame?.leftPointer ?? 0}
-            rightPointer={frame?.rightPointer ?? state.heightArray.length - 1}
-            candidateLeftPointer={frame?.candidateLeftPointer}
-            candidateRightPointer={frame?.candidateRightPointer}
-            bestLeftPointer={frame?.bestLeftPointer}
-            bestRightPointer={frame?.bestRightPointer}
-            currentArea={frame?.currentArea ?? 0}
-            maxArea={frame?.maxArea ?? 0}
-            dwellMs={state.animationSpeed}
-            isDone={frame?.operation === 'done'}
-            showCandidate={frame?.operation === 'compare' || frame?.operation === 'move'}
-          />
+              key={heightsKey}
+              heights={state.heightArray}
+              leftPointer={frame?.leftPointer ?? 0}
+              rightPointer={frame?.rightPointer ?? state.heightArray.length - 1}
+              candidateLeftPointer={frame?.candidateLeftPointer}
+              candidateRightPointer={frame?.candidateRightPointer}
+              bestLeftPointer={frame?.bestLeftPointer}
+              bestRightPointer={frame?.bestRightPointer}
+              currentArea={frame?.currentArea ?? 0}
+              limitingHeight={frame?.limitingHeight}
+              currentWidth={frame?.currentWidth}
+              eliminatedRange={frame?.eliminatedRange}
+              maxArea={frame?.maxArea ?? 0}
+              dwellMs={state.animationSpeed}
+              isDone={frame?.operation === 'done'}
+              showCandidate={frame?.operation === 'compare' || frame?.operation === 'move'}
+            />
             <div className="canvas-legend" aria-label="画布图例" data-testid="canvas-legend">
-            <span><i className="legend-swatch left" />当前焦点</span>
-            <span><i className="legend-swatch right" />比较对象</span>
-            <span><i className="legend-swatch water" />当前容器</span>
-            <span><i className="legend-swatch best" />当前最优解</span>
+              <span><i className="legend-swatch left" />当前焦点</span>
+              <span><i className="legend-swatch right" />比较对象</span>
+              <span><i className="legend-swatch water" />当前容器</span>
+              <span><i className="legend-swatch best" />当前最优解</span>
+            </div>
           </div>
-        </div>
           <footer className="canvas-caption" aria-live="polite">
-          <span className="operation-badge" data-operation={frame?.operation ?? 'init'}>{frame?.operationLabel ?? '初始化'}</span>
-          <p className="step-narration">{frame?.narration ?? '左右指针从数组两端开始，准备寻找最大容积。'}</p>
-          <div className="canvas-metrics">
-            <span>当前面积 <b>{frame?.currentArea ?? 0}</b></span>
-            <span>最大面积 <b>{frame?.maxArea ?? 0}</b></span>
-            <span>搜索宽度 <b>{Math.max(0, (frame?.rightPointer ?? state.heightArray.length - 1) - (frame?.leftPointer ?? 0))}</b></span>
-          </div>
-        </footer>
-      </section>
+            <span className="operation-badge" data-operation={frame?.operation ?? 'init'}>{frame?.operationLabel ?? '初始化'}</span>
+            <p className="step-narration">{frame?.narration ?? '左右指针从数组两端开始，准备寻找最大容积。'}</p>
+            <div className="canvas-metrics">
+              <span>当前面积 <b>{frame?.currentArea ?? 0}</b></span>
+              <span>最大面积 <b>{frame?.maxArea ?? 0}</b></span>
+              <span>搜索宽度 <b>{Math.max(0, (frame?.rightPointer ?? state.heightArray.length - 1) - (frame?.leftPointer ?? 0))}</b></span>
+            </div>
+          </footer>
+        </section>
 
         <CodePanel activeAnchor={frame?.codeAnchor ?? 'init'} variables={frame?.variables ?? { i: 0, j: state.heightArray.length - 1, res: 0 }} algorithmType={state.algorithmType} />
       </div>

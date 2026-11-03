@@ -85,6 +85,8 @@ test('E2E-006 操作、解说和画布随步骤同步', async ({ page }) => {
   await expect(page.locator('.operation-badge')).toHaveAttribute('data-operation', 'compare');
   await expect(narration).not.toHaveText(before ?? '');
   await expect(page.locator('.water-area')).toHaveCount(1);
+  await expect(page.locator('.intuition-strip')).toContainText('面积 =');
+  await expect(page.locator('.area-label')).toContainText('面积 1 × 8 = 8');
   await expect(page.locator('.code-line.is-active').first()).toHaveAttribute('data-anchor', 'compare-area');
   await page.getByLabel('下一步').click();
   await expect(page.locator('.operation-badge')).toHaveAttribute('data-operation', 'update');
@@ -156,6 +158,8 @@ test('E2E-011 多解法视图隔离且均可完整播放', async ({ page }, test
   await page.screenshot({ path: testInfo.outputPath('two-pointer-step-1.png') });
   await page.getByLabel('下一步').click();
   await page.screenshot({ path: testInfo.outputPath('two-pointer-step-2.png') });
+  await page.getByLabel('下一步').click();
+  await page.screenshot({ path: testInfo.outputPath('two-pointer-step-3.png') });
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.getByLabel('下一步').click();
   await expect(page.locator('.step-narration')).toContainText('面积');

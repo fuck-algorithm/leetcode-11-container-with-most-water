@@ -36,6 +36,13 @@ describe('算法演示输入与步骤注册', () => {
       expect(frame.narration.length).toBeGreaterThan(10);
       expect(frame.variables).toHaveProperty('res');
     }
+    const firstCompare = frames.find((frame) => frame.operation === 'compare');
+    expect(firstCompare).toMatchObject({ limitingHeight: 1, currentWidth: 8, currentArea: 8 });
+    const firstMove = frames.find((frame) => frame.operation === 'move');
+    expect(firstMove?.decision).toContain('排除索引 0');
+    expect(firstMove?.eliminatedRange).toEqual([0, 0]);
+    expect(firstMove?.limitingHeight).toBe(1);
+    expect(firstMove?.currentWidth).toBe(8);
   });
 
   it('非法输入显示错误并保留当前演示数据', async () => {
