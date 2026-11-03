@@ -82,16 +82,16 @@ const AlgorithmAnimation: React.FC = () => {
             </div>
             <div className="step-indicator"><span>STEP</span><strong>{state.currentFrame + 1}</strong><i>/</i>{state.totalFrames}</div>
           </header>
-          <div className="canvas-stage">
+          <div className={`canvas-stage${frame?.decision || frame?.operation === 'compare' ? ' has-explanation' : ''}`}>
             <div className="intuition-strip" aria-live="polite">
               <span className="intuition-step">{frame?.operation === 'move' ? '为什么移动？' : frame?.operation === 'compare' ? '这一步怎么算？' : '读图提示'}</span>
               <p>{frame?.decision ?? '容器面积 = 较短边高度 × 两边索引差；先从最宽的两端开始。'}</p>
             </div>
             <div className="step-explanation" aria-label="当前步骤解释">
-              <div><b>正在看</b><span>{frame?.operation === 'move' ? `索引 ${frame.eliminatedRange?.[0]} 的短边` : `索引 ${frame?.leftPointer} 与 ${frame?.rightPointer}`}</span></div>
-              <div><b>水位 / 宽度</b><span>{frame?.limitingHeight ?? Math.min(state.heightArray[frame?.leftPointer ?? 0] ?? 0, state.heightArray[frame?.rightPointer ?? state.heightArray.length - 1] ?? 0)} × {frame?.currentWidth ?? Math.max(0, (frame?.rightPointer ?? state.heightArray.length - 1) - (frame?.leftPointer ?? 0))}</span></div>
-              <div><b>这一帧结果</b><span>{frame?.operation === 'move' ? `排除索引 ${frame.eliminatedRange?.[0]}，保留区间 [${frame.leftPointer}, ${frame.rightPointer}]` : frame?.operation === 'done' ? `区间收敛，答案 ${frame.maxArea}` : frame?.operation === 'update' ? `新纪录 ${frame.currentArea}，最优边界 [${frame.bestLeftPointer}, ${frame.bestRightPointer}]` : frame?.operation === 'compare' ? `面积 ${frame.currentArea}，当前最大 ${frame.maxArea}` : '从两端开始，先检查最大宽度'}</span></div>
-              <div><b>下一步</b><span>{frame?.operation === 'move' ? '只移动较短边，保留其他候选' : frame?.operation === 'done' ? '搜索结束' : frame?.operation === 'update' ? '按短边决定移动方向' : frame?.operation === 'compare' ? '比较并更新历史最大值' : '计算水位和宽度'}</span></div>
+              <div><b>正在看</b><span>{frame?.operation === 'move' && state.algorithmType === 'twoPointer' ? `刚比较 (${frame.candidateLeftPointer}, ${frame.candidateRightPointer})，现指针 (${frame.leftPointer}, ${frame.rightPointer})` : `索引 ${frame?.candidateLeftPointer ?? frame?.leftPointer} 与 ${frame?.candidateRightPointer ?? frame?.rightPointer}`}</span></div>
+              <div><b>水位 / 宽度</b><span>{frame?.limitingHeight ?? Math.min(state.heightArray[frame?.candidateLeftPointer ?? frame?.leftPointer ?? 0] ?? 0, state.heightArray[frame?.candidateRightPointer ?? frame?.rightPointer ?? state.heightArray.length - 1] ?? 0)} × {frame?.currentWidth ?? Math.max(0, (frame?.candidateRightPointer ?? frame?.rightPointer ?? state.heightArray.length - 1) - (frame?.candidateLeftPointer ?? frame?.leftPointer ?? 0))}</span></div>
+              <div><b>这一帧结果</b><span>{frame?.operation === 'move' ? state.algorithmType === 'bruteForce' ? `下一组边界 (${frame.candidateLeftPointer}, ${frame.candidateRightPointer})，待计算面积 ${frame.currentArea}` : `排除索引 ${frame.eliminatedRange?.[0]}，保留区间 [${frame.leftPointer}, ${frame.rightPointer}]` : frame?.operation === 'done' ? `区间收敛，答案 ${frame.maxArea}` : frame?.operation === 'update' ? `新纪录 ${frame.currentArea}，最优边界 [${frame.bestLeftPointer}, ${frame.bestRightPointer}]` : frame?.operation === 'compare' ? `面积 ${frame.currentArea}，当前最大 ${frame.maxArea}` : '从两端开始，先检查最大宽度'}</span></div>
+              <div><b>下一步</b><span>{frame?.operation === 'move' ? state.algorithmType === 'bruteForce' ? '计算这组边界的水位、宽度和面积' : '只移动较短边，保留其他候选' : frame?.operation === 'done' ? '搜索结束' : frame?.operation === 'update' ? '按短边决定移动方向' : frame?.operation === 'compare' ? '比较并更新历史最大值' : '计算水位和宽度'}</span></div>
             </div>
             <VerticalBars
               key={heightsKey}

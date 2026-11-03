@@ -56,7 +56,7 @@ const code: Record<Language, CodeLine[]> = {
     { anchor: 'compare-area', text: 'while (i < j) {' },
     { anchor: 'compare-area', text: '  const h = Math.min(height[i], height[j]);' },
     { anchor: 'compare-area', text: '  const area = h * (j - i);' },
-    { anchor: 'compare-area', text: '  res = Math.max(res, area);' },
+    { anchor: 'update', text: '  res = Math.max(res, area);' },
     { anchor: 'move-left', text: '  if (height[i] < height[j]) i++;' },
     { anchor: 'move-right', text: '  else j--;' },
     { anchor: 'return', text: '}' },

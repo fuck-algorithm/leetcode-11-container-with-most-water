@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { generateTwoPointerFrames } from '../src/utils/algorithmUtils.ts';
+import { generateBruteForceFrames, generateTwoPointerFrames } from '../src/utils/algorithmUtils.ts';
 
 function bruteForce(heights) {
   let best = 0;
@@ -37,7 +37,48 @@ describe('双指针动画快照', () => {
     for (const frame of moves) {
       expect(frame.candidateLeftPointer).toBeDefined();
       expect(frame.candidateRightPointer).toBeGreaterThan(frame.candidateLeftPointer);
+      expect(frame.currentArea).toBe(Math.min(
+        [1, 8, 6, 2, 5, 4, 8, 3, 7][frame.candidateLeftPointer],
+        [1, 8, 6, 2, 5, 4, 8, 3, 7][frame.candidateRightPointer],
+      ) * (frame.candidateRightPointer - frame.candidateLeftPointer));
+      expect(frame.limitingHeight).toBe(Math.min(
+        [1, 8, 6, 2, 5, 4, 8, 3, 7][frame.candidateLeftPointer],
+        [1, 8, 6, 2, 5, 4, 8, 3, 7][frame.candidateRightPointer],
+      ));
+      expect(frame.currentWidth).toBe(frame.candidateRightPointer - frame.candidateLeftPointer);
     }
+  });
+
+  it('更新帧同步呈现新纪录、面积和最优边界', () => {
+    const update = generateTwoPointerFrames([1, 2]).find((frame) => frame.operation === 'update');
+    expect(update.maxArea).toBe(1);
+    expect(update.variables.res).toBe(1);
+    expect([update.bestLeftPointer, update.bestRightPointer]).toEqual([0, 1]);
+  });
+
+  it('暴力枚举逐一生成所有唯一边界组合的计算帧', () => {
+    const heights = [3, 1, 4, 2, 5];
+    const compares = generateBruteForceFrames(heights).filter((frame) => frame.operation === 'compare');
+    const pairs = compares.map((frame) => `${frame.leftPointer},${frame.rightPointer}`);
+    expect(pairs).toHaveLength(heights.length * (heights.length - 1) / 2);
+    expect(new Set(pairs).size).toBe(pairs.length);
+    for (const frame of compares) {
+      const width = frame.rightPointer - frame.leftPointer;
+      const waterline = Math.min(heights[frame.leftPointer], heights[frame.rightPointer]);
+      expect(frame).toMatchObject({ currentWidth: width, limitingHeight: waterline, currentArea: width * waterline });
+    }
+  });
+
+  it('暴力枚举移动帧指向下一组并展示其待计算面积', () => {
+    const frames = generateBruteForceFrames([1, 2, 3]);
+    const move = frames.find((frame) => frame.operation === 'move');
+    expect(move.leftPointer).toBe(0);
+    expect(move.rightPointer).toBe(2);
+    expect(move.candidateRightPointer).toBe(2);
+    expect(move.currentArea).toBe(2);
+    expect(move.currentWidth).toBe(2);
+    expect(move.variables.j).toBe(2);
+    expect(move.narration).toContain('下一步');
   });
 
   it('短数组和重复高度也得出正确结果', () => {

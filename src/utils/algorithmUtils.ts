@@ -69,7 +69,7 @@ export function generateTwoPointerFrames(heights: number[]): FrameSnapshot[] {
       bestLeftPointer = leftPointer;
       bestRightPointer = rightPointer;
       frames.push({
-        leftPointer, rightPointer, maxArea: previousMax, currentArea: area, isKeyFrame: true,
+        leftPointer, rightPointer, maxArea, currentArea: area, isKeyFrame: true,
         description: `面积 ${area} 超过此前记录，更新最大面积。`,
         operation: 'update', operationLabel: '更新最大值',
         narration: `候选面积 ${area} 大于旧纪录，因此将最优容器更新为索引 ${leftPointer} 到 ${rightPointer}。`,
@@ -90,7 +90,7 @@ export function generateTwoPointerFrames(heights: number[]): FrameSnapshot[] {
         description: `左端高度 ${heights[leftPointer - 1]} 较短，移动左指针以寻找更高边。`,
         operation: 'move',
         operationLabel: '移动左指针',
-        narration: `左边高度 ${heights[leftPointer - 1]} 更短，水位被它封顶；右端固定时，向内移动只会让宽度变窄、面积更小，因此只排除左边这条短边。`,
+        narration: `刚比较的边界是 (${leftPointer - 1}, ${rightPointer})，面积 ${area}。左边高度 ${heights[leftPointer - 1]} 更短，水位被它封顶；右端固定时，向内移动只会让宽度变窄、面积更小，因此只排除左边这条短边。指针现移到 (${leftPointer}, ${rightPointer})。`,
         decision: `左边是短板 ${heights[leftPointer - 1]}。固定左边，宽度只会缩小；它不可能产生更大面积，所以排除索引 ${leftPointer - 1}。`,
         eliminatedRange: [leftPointer - 1, leftPointer - 1],
         limitingHeight: Math.min(heights[leftPointer - 1], heights[rightPointer]),
@@ -113,7 +113,7 @@ export function generateTwoPointerFrames(heights: number[]): FrameSnapshot[] {
         description: `右端高度 ${heights[rightPointer + 1]} 不高于左端，移动右指针以寻找更高边。`,
         operation: 'move',
         operationLabel: '移动右指针',
-        narration: `右边高度 ${heights[rightPointer + 1]} 较短或相等，水位被右端封顶；左端固定时，向内移动只会让宽度变窄，因此只排除右边这条短边。`,
+        narration: `刚比较的边界是 (${leftPointer}, ${rightPointer + 1})，面积 ${area}。右边高度 ${heights[rightPointer + 1]} 较短或相等，水位被右端封顶；左端固定时，向内移动只会让宽度变窄，因此只排除右边这条短边。指针现移到 (${leftPointer}, ${rightPointer})。`,
         decision: `右边是短板 ${heights[rightPointer + 1]}。固定右边，宽度只会缩小；它不可能产生更大面积，所以排除索引 ${rightPointer + 1}。`,
         eliminatedRange: [rightPointer + 1, rightPointer + 1],
         limitingHeight: Math.min(heights[leftPointer], heights[rightPointer + 1]),
@@ -172,7 +172,8 @@ export function generateBruteForceFrames(heights: number[]): FrameSnapshot[] {
       const previousMax = maxArea;
       const isNewMax = currentArea > maxArea;
       append({
-        leftPointer: left, rightPointer: right, maxArea: previousMax, currentArea, isKeyFrame: false,
+        leftPointer: left, rightPointer: right, maxArea: previousMax, currentArea,
+        limitingHeight: Math.min(heights[left], heights[right]), currentWidth: right - left, isKeyFrame: false,
         description: `检查索引 ${left} 与 ${right}，容器面积为 ${currentArea}。`,
         operation: 'compare', operationLabel: '枚举并比较',
         narration: `检查边界 ${left} 和 ${right}，较短边 ${Math.min(heights[left], heights[right])} 乘以宽度 ${right - left}，得到面积 ${currentArea}。`,
@@ -195,14 +196,18 @@ export function generateBruteForceFrames(heights: number[]): FrameSnapshot[] {
         });
       }
       if (right < heights.length - 1) {
+        const nextRight = right + 1;
+        const nextArea = Math.min(heights[left], heights[nextRight]) * (nextRight - left);
         append({
-          leftPointer: left, rightPointer: right + 1, maxArea, currentArea, isKeyFrame: false,
-          description: `当前组合已检查，右边界向内移动以枚举下一种组合。`,
+          leftPointer: left, rightPointer: nextRight, maxArea, currentArea: nextArea, isKeyFrame: false,
+          description: `边界 ${left} 到 ${right} 已检查，右指针从 ${right} 移到 ${nextRight}；下一帧计算新组合。`,
           operation: 'move', operationLabel: '移动枚举边界',
-          narration: `边界 ${left} 到 ${right} 已计算完成，固定左端并右移一格，下一步检查索引 ${left} 和 ${right + 1}。`,
-          candidateLeftPointer: left, candidateRightPointer: right,
+          narration: `已完成边界 (${left}, ${right}) 的比较。固定左端索引 ${left}，右端从 ${right} 移到 ${nextRight}，下一步将计算高度 ${heights[left]} 与 ${heights[nextRight]} 形成的容器面积。`,
+          limitingHeight: Math.min(heights[left], heights[nextRight]),
+          currentWidth: nextRight - left,
+          candidateLeftPointer: left, candidateRightPointer: nextRight,
           bestLeftPointer, bestRightPointer, codeAnchor: 'brute-move',
-          variables: { i: left, j: right + 1, res: maxArea, checked },
+          variables: { i: left, j: nextRight, res: maxArea, area: nextArea, checked },
         });
       }
     }

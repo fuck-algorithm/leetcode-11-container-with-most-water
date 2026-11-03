@@ -38,6 +38,8 @@ describe('算法演示输入与步骤注册', () => {
     }
     const firstCompare = frames.find((frame) => frame.operation === 'compare');
     expect(firstCompare).toMatchObject({ limitingHeight: 1, currentWidth: 8, currentArea: 8 });
+    const firstUpdate = frames.find((frame) => frame.operation === 'update');
+    expect(firstUpdate).toMatchObject({ maxArea: 8, currentArea: 8, bestLeftPointer: 0, bestRightPointer: 8, variables: { res: 8 } });
     const firstMove = frames.find((frame) => frame.operation === 'move');
     expect(firstMove?.decision).toContain('排除索引 0');
     expect(firstMove?.eliminatedRange).toEqual([0, 0]);

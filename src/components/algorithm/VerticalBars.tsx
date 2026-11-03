@@ -47,7 +47,7 @@ const VerticalBars: React.FC<VerticalBarsProps> = ({ heights, leftPointer, right
     const duration = motionDuration(MOTION.move, dwellMs, reducedMotion);
     const width = Math.max(320, size.width);
     const height = Math.max(220, size.height);
-    const margin = { top: 78, right: 36, bottom: 70, left: 36 };
+    const margin = { top: width <= 760 ? 178 : 165, right: 36, bottom: 70, left: 36 };
     const plotWidth = width - margin.left - margin.right;
     const plotHeight = height - margin.top - margin.bottom;
     const maxHeight = Math.max(1, ...heights);
@@ -169,8 +169,11 @@ const VerticalBars: React.FC<VerticalBarsProps> = ({ heights, leftPointer, right
     const candidate = showCandidate && visualRight > visualLeft;
     const area = currentArea || currentHeight * (visualRight - visualLeft);
     const areaLabel = scene.selectAll<SVGTextElement, number>('text.area-label').data(candidate ? [area] : []);
-    areaLabel.join('text').attr('class', 'area-label').attr('text-anchor', 'middle')
-      .attr('x', (leftX + rightX) / 2).attr('y', Math.max(margin.top + 14, waterTop - 13)).text(`面积 ${limitingHeight ?? currentHeight} × ${currentWidth ?? (visualRight - visualLeft)} = ${area}`);
+    areaLabel.join('text').attr('class', 'area-label')
+      .attr('text-anchor', width <= 760 ? 'start' : 'middle')
+      .attr('x', width <= 760 ? margin.left + 6 : (leftX + rightX) / 2)
+      .attr('y', margin.top - 10)
+      .text(`面积 ${limitingHeight ?? currentHeight} × ${currentWidth ?? (visualRight - visualLeft)} = ${area}`);
     scene.selectAll<SVGTextElement, number>('text.best-label').data([maxArea]).join('text').attr('class', 'best-label')
       .attr('x', width - margin.right).attr('y', 27).attr('text-anchor', 'end').text(`最大面积 ${maxArea}`);
     scene.selectAll<SVGLineElement, number>('line.baseline').data([0]).join('line').attr('class', 'baseline')

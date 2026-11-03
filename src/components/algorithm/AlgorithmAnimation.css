@@ -126,6 +126,12 @@
 .step-indicator strong { color: #16856b; font-size: 19px; line-height: 1; }
 .step-indicator i { color: #aab8b3; font-style: normal; }
 .canvas-stage { position: relative; min-width: 0; min-height: 0; overflow: hidden; background: linear-gradient(180deg, #fbfdfc 0%, #fff 70%); }
+.canvas-stage.has-explanation .canvas-legend { max-width: min(55%, calc(100% - 260px)); }
+.canvas-stage.has-explanation .step-explanation { top: 78px; right: 14px; width: min(230px, 32%); }
+@media (max-width: 760px) {
+  .canvas-stage.has-explanation .canvas-legend { max-width: calc(100% - 12px); }
+  .canvas-stage.has-explanation .step-explanation { top: 78px; right: 8px; width: min(210px, 52%); }
+}
 .intuition-strip { position: absolute; z-index: 2; top: 42px; left: 14px; right: 14px; display: flex; align-items: center; gap: 8px; min-height: 30px; padding: 5px 9px; border: 1px solid #dcebe5; border-radius: 7px; background: #f4faf7ed; pointer-events: none; }
 .intuition-step { flex: 0 0 auto; color: #126b56; font-size: 10px; font-weight: 800; }
 .intuition-strip p { margin: 0; color: #49645b; font-size: 10px; line-height: 1.35; }

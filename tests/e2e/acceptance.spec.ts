@@ -107,6 +107,8 @@ test('E2E-006 操作、解说和画布随步骤同步', async ({ page }) => {
   await expect(page.getByLabel('关键变量')).toContainText('res');
   await page.getByLabel('代码语言').selectOption('Go');
   await expect(page.locator('.code-line.is-active').first()).toHaveAttribute('data-anchor', 'update');
+  await page.getByLabel('代码语言').selectOption('JavaScript');
+  await expect(page.locator('.code-line.is-active').first()).toHaveAttribute('data-anchor', 'update');
 });
 
 test('E2E-007 方向键、空格和重置快捷键', async ({ page }) => {
