@@ -82,7 +82,7 @@ const AlgorithmAnimation: React.FC = () => {
             </div>
             <div className="step-indicator"><span>STEP</span><strong>{state.currentFrame + 1}</strong><i>/</i>{state.totalFrames}</div>
           </header>
-          <div className={`canvas-stage${frame?.decision || frame?.operation === 'compare' ? ' has-explanation' : ''}${window.innerWidth <= 760 ? ' compact-stage' : ''}`}>
+          <div className={`canvas-stage${frame?.decision || frame?.operation === 'compare' ? ' has-explanation' : ''}${window.innerWidth <= 760 ? ' compact-stage' : ''}${window.innerHeight < 700 ? ' short-stage' : ''}`}>
             <div className="intuition-strip" aria-live="polite">
               <span className="intuition-step">{frame?.operation === 'move' ? '为什么移动？' : frame?.operation === 'compare' ? '这一步怎么算？' : '读图提示'}</span>
               <p>{frame?.decision ?? '容器面积 = 较短边高度 × 两边索引差；先从最宽的两端开始。'}</p>
