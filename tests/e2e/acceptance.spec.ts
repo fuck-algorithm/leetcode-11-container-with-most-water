@@ -37,7 +37,41 @@ test('E2E-001 单屏首屏与画布空间预算', async ({ page }) => {
   }
 });
 
-test('E2E-002 外链行为', async ({ page }) => {
+test('E2E-002 调整视口时短屏画布模式同步切换', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto('/');
+  const stage = page.locator('.canvas-stage');
+  await expect(stage).not.toHaveClass(/compact-stage|short-stage/);
+
+  await page.setViewportSize({ width: 390, height: 640 });
+  await expect(stage).toHaveClass(/compact-stage/);
+  await expect(stage).toHaveClass(/short-stage/);
+  await expect.poll(() => page.locator('.bars-svg').evaluate((svg) => {
+    const stageBox = svg.closest('.canvas-stage')!.getBoundingClientRect();
+    const svgBox = svg.getBoundingClientRect();
+    return svgBox.width === stageBox.width && svgBox.height < stageBox.height && svgBox.bottom <= stageBox.bottom;
+  })).toBe(true);
+
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await expect(stage).not.toHaveClass(/compact-stage|short-stage/);
+});
+
+test('E2E-003 宽屏矮视口保留有效柱图高度', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 640 });
+  await page.goto('/');
+  await expect(page.locator('.canvas-stage')).toHaveClass(/short-stage/);
+  await expect.poll(() => page.locator('.bar-shape').evaluateAll((bars) =>
+    bars.every((bar) => Number(bar.getAttribute('height')) >= 0),
+  )).toBe(true);
+  const dimensions = await page.evaluate(() => {
+    const svg = document.querySelector('.bars-svg')!.getBoundingClientRect();
+    const bars = [...document.querySelectorAll<SVGRectElement>('.bar-shape')];
+    return { svgHeight: svg.height, maxBar: Math.max(...bars.map((bar) => Number(bar.getAttribute('height')))) };
+  });
+  expect(dimensions.maxBar / dimensions.svgHeight).toBeGreaterThan(0.3);
+});
+
+test('E2E-004 外链行为', async ({ page }) => {
   await page.goto('/');
   const hot100 = page.locator('.header-link').first();
   await expect(hot100).toHaveAttribute('href', 'https://fuck-algorithm.github.io/leetcode-hot-100/');

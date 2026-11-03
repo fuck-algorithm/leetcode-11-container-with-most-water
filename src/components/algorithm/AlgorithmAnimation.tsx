@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { useViewportSize } from '../../hooks/useViewportSize';
 import './AlgorithmAnimation.css';
 import VerticalBars from './VerticalBars';
 import ControlPanel from './ControlPanel';
@@ -24,6 +25,7 @@ const AlgorithmAnimation: React.FC = () => {
   const [customHeights, setCustomHeights] = useState(state.heightArray.join(', '));
   const [inputError, setInputError] = useState('');
   const heightsKey = useMemo(() => state.heightArray.join(','), [state.heightArray]);
+  const viewport = useViewportSize();
 
   useEffect(() => setCustomHeights(heightsKey), [heightsKey]);
 
@@ -82,7 +84,7 @@ const AlgorithmAnimation: React.FC = () => {
             </div>
             <div className="step-indicator"><span>STEP</span><strong>{state.currentFrame + 1}</strong><i>/</i>{state.totalFrames}</div>
           </header>
-          <div className={`canvas-stage${frame?.decision || frame?.operation === 'compare' ? ' has-explanation' : ''}${window.innerWidth <= 760 ? ' compact-stage' : ''}${window.innerHeight < 700 ? ' short-stage' : ''}${state.algorithmType === 'bruteForce' ? ' brute-stage' : ''}`}>
+          <div className={`canvas-stage${frame?.decision || frame?.operation === 'compare' ? ' has-explanation' : ''}${state.algorithmType === 'bruteForce' ? ' brute-stage' : ''}${viewport.width <= 760 ? ' compact-stage' : ''}${viewport.height < 700 ? ' short-stage' : ''}`}>
             <div className="intuition-strip" aria-live="polite">
               <span className="intuition-step">{frame?.operation === 'move' ? '为什么移动？' : frame?.operation === 'compare' ? '这一步怎么算？' : '读图提示'}</span>
               <p>{frame?.decision ?? '容器面积 = 较短边高度 × 两边索引差；先从最宽的两端开始。'}</p>

@@ -47,10 +47,11 @@ const VerticalBars: React.FC<VerticalBarsProps> = ({ heights, leftPointer, right
     const duration = motionDuration(MOTION.move, dwellMs, reducedMotion);
     const width = Math.max(320, size.width);
     const height = Math.max(220, size.height);
-    const compact = size.width <= 760 && size.height < 220;
-    const margin = { top: compact ? 24 : width <= 760 ? 178 : 165, right: 36, bottom: compact ? 45 : 70, left: 36 };
+    const compact = size.height < 360;
+    const narrow = size.width <= 760;
+    const margin = { top: compact ? 24 : narrow ? 178 : 165, right: 36, bottom: compact ? 45 : 70, left: 36 };
     const plotWidth = width - margin.left - margin.right;
-    const plotHeight = height - margin.top - margin.bottom;
+    const plotHeight = Math.max(1, height - margin.top - margin.bottom);
     const maxHeight = Math.max(1, ...heights);
     const retired = eliminatedRange ?? [0, -1];
     const gap = Math.min(20, plotWidth / heights.length * 0.2);
