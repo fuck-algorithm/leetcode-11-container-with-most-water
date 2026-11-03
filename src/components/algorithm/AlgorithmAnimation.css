@@ -131,7 +131,8 @@
 @media (max-width: 760px) {
   .canvas-stage.has-explanation .canvas-legend { max-width: calc(100% - 12px); }
   .canvas-stage.has-explanation .step-explanation { top: 78px; right: 8px; width: min(210px, 52%); }
-  .canvas-stage.compact-stage.has-explanation .step-explanation { display: none; }
+  .canvas-stage.compact-stage.has-explanation .step-explanation,
+  .canvas-stage.compact-stage.brute-stage .step-explanation { display: none; }
   .canvas-stage.compact-stage .bars-svg { position: absolute; inset: 0; }
   .canvas-stage.short-stage .step-explanation { display: none; }
   .canvas-stage.short-stage .area-label { display: none; }
