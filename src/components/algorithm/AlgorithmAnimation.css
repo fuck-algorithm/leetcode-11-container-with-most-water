@@ -155,7 +155,7 @@
 .canvas-stage.short-stage .area-label,
 .canvas-stage.short-stage .canvas-legend,
 .canvas-stage.short-stage .canvas-tools { display: none; }
-.canvas-stage.short-stage .intuition-strip { position: relative; top: auto; margin: 4px 8px 0; }
+.canvas-stage.short-stage .intuition-strip { position: relative; top: auto; left: auto; right: auto; width: auto; margin: 4px 8px 0; }
 .canvas-stage.short-stage .bars-svg { position: absolute; inset: 38px 0 0; height: calc(100% - 38px); }
 .canvas-stage.zoomed-stage .intuition-strip,
 .canvas-stage.zoomed-stage .step-explanation,
@@ -199,7 +199,7 @@
   .canvas-card { grid-template-rows: 44px minmax(0, 1fr) 70px; }
   .canvas-header { padding: 0 10px; }
   .canvas-stage.short-stage .canvas-legend, .canvas-stage.short-stage .canvas-tools { display: none; }
-  .canvas-stage.short-stage .intuition-strip { position: relative; top: auto; margin: 4px 8px 0; }
+  .canvas-stage.short-stage .intuition-strip { position: relative; top: auto; left: auto; right: auto; width: auto; margin: 4px 8px 0; }
   .canvas-stage.short-stage .bars-svg { top: 38px; height: calc(100% - 38px); }
   .canvas-caption { grid-template-columns: auto minmax(0, 1fr); gap: 6px; padding: 6px 10px; }
   .canvas-metrics { grid-column: 1 / -1; justify-content: space-between; }

@@ -74,7 +74,21 @@ test('E2E-003 调整视口时短屏画布模式同步切换', async ({ page }) =
   await expect(stage).not.toHaveClass(/compact-stage|short-stage/);
 });
 
-test('E2E-003 宽屏矮视口保留有效柱图高度', async ({ page }) => {
+test('E2E-004 矮屏提示条保持在画布内', async ({ page }) => {
+  for (const viewport of [{ width: 390, height: 640 }, { width: 1024, height: 600 }]) {
+    await page.setViewportSize(viewport);
+    await page.goto('/');
+    const boxes = await page.evaluate(() => {
+      const hint = document.querySelector('.intuition-strip')!.getBoundingClientRect();
+      const stage = document.querySelector('.canvas-stage')!.getBoundingClientRect();
+      return { hintRight: hint.right, stageRight: stage.right, hintLeft: hint.left, stageLeft: stage.left };
+    });
+    expect(boxes.hintLeft).toBeGreaterThanOrEqual(boxes.stageLeft);
+    expect(boxes.hintRight).toBeLessThanOrEqual(boxes.stageRight);
+  }
+});
+
+test('E2E-005 宽屏矮视口保留有效柱图高度', async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 640 });
   await page.goto('/');
   await expect(page.locator('.canvas-stage')).toHaveClass(/short-stage/);
