@@ -69,16 +69,17 @@ describe('双指针动画快照', () => {
     }
   });
 
-  it('暴力枚举移动帧指向下一组并展示其待计算面积', () => {
+  it('暴力枚举移动帧只移动指针，不提前计算下一组', () => {
     const frames = generateBruteForceFrames([1, 2, 3]);
     const move = frames.find((frame) => frame.operation === 'move');
     expect(move.leftPointer).toBe(0);
     expect(move.rightPointer).toBe(2);
     expect(move.candidateRightPointer).toBe(2);
-    expect(move.currentArea).toBe(2);
-    expect(move.currentWidth).toBe(2);
+    expect(move.currentArea).toBe(0);
+    expect(move.currentWidth).toBeUndefined();
+    expect(move.limitingHeight).toBeUndefined();
     expect(move.variables.j).toBe(2);
-    expect(move.narration).toContain('下一步');
+    expect(move.narration).toContain('下一帧才计算');
   });
 
   it('短数组和重复高度也得出正确结果', () => {

@@ -197,17 +197,14 @@ export function generateBruteForceFrames(heights: number[]): FrameSnapshot[] {
       }
       if (right < heights.length - 1) {
         const nextRight = right + 1;
-        const nextArea = Math.min(heights[left], heights[nextRight]) * (nextRight - left);
         append({
-          leftPointer: left, rightPointer: nextRight, maxArea, currentArea: nextArea, isKeyFrame: false,
-          description: `边界 ${left} 到 ${right} 已检查，右指针从 ${right} 移到 ${nextRight}；下一帧计算新组合。`,
+          leftPointer: left, rightPointer: nextRight, maxArea, currentArea: 0, isKeyFrame: false,
+          description: `边界 ${left} 到 ${right} 已检查，右指针从 ${right} 移到 ${nextRight}；下一帧再计算新组合。`,
           operation: 'move', operationLabel: '移动枚举边界',
-          narration: `已完成边界 (${left}, ${right}) 的比较。固定左端索引 ${left}，右端从 ${right} 移到 ${nextRight}，下一步将计算高度 ${heights[left]} 与 ${heights[nextRight]} 形成的容器面积。`,
-          limitingHeight: Math.min(heights[left], heights[nextRight]),
-          currentWidth: nextRight - left,
+          narration: `已完成边界 (${left}, ${right}) 的比较。固定左端索引 ${left}，右端从 ${right} 移到 ${nextRight}；这一帧只移动指针，下一帧才计算新组合的水位与面积。`,
           candidateLeftPointer: left, candidateRightPointer: nextRight,
           bestLeftPointer, bestRightPointer, codeAnchor: 'brute-move',
-          variables: { i: left, j: nextRight, res: maxArea, area: nextArea, checked },
+          variables: { i: left, j: nextRight, res: maxArea, checked },
         });
       }
     }
