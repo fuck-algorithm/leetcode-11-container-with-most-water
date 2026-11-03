@@ -129,6 +129,13 @@
 .intuition-strip { position: absolute; z-index: 2; top: 42px; left: 14px; right: 14px; display: flex; align-items: center; gap: 8px; min-height: 30px; padding: 5px 9px; border: 1px solid #dcebe5; border-radius: 7px; background: #f4faf7ed; pointer-events: none; }
 .intuition-step { flex: 0 0 auto; color: #126b56; font-size: 10px; font-weight: 800; }
 .intuition-strip p { margin: 0; color: #49645b; font-size: 10px; line-height: 1.35; }
+.step-explanation { position: absolute; z-index: 2; top: 78px; right: 14px; display: grid; gap: 5px; width: min(230px, 32%); padding: 8px 10px; border: 1px solid #dce6e1; border-radius: 7px; color: #49645b; background: #ffffffed; box-shadow: 0 2px 8px #244b3f10; pointer-events: none; }
+.step-explanation div { display: grid; grid-template-columns: 66px minmax(0,1fr); gap: 5px; font-size: 9px; line-height: 1.35; }
+.step-explanation b { color: #126b56; }
+.step-explanation span { overflow-wrap: anywhere; }
+@media (max-width: 760px) { .step-explanation { top: 112px; width: min(210px, 44%); } }
+
+
 .bars-svg .eliminated-range { fill: #f5e7dc; fill-opacity: .42; stroke: #c7784c; stroke-width: 1.5; stroke-dasharray: 5 4; pointer-events: none; }
 .canvas-legend { position: absolute; top: 10px; left: 14px; z-index: 1; display: flex; flex-wrap: wrap; gap: 12px; color: #617b72; font-size: 10px; pointer-events: none; }
 .canvas-legend span { display: inline-flex; align-items: center; gap: 5px; white-space: nowrap; }

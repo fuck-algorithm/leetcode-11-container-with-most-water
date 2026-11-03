@@ -4,8 +4,6 @@ import VerticalBars from './VerticalBars';
 import ControlPanel from './ControlPanel';
 import CodePanel from './CodePanel';
 import './CodePanel.css';
-import { AlgorithmThoughtModal } from '../AlgorithmThoughtModal';
-import '../AlgorithmThoughtModal.css';
 import { useAlgorithmAnimation } from '../../hooks/useAlgorithmAnimation';
 import { generateRandomHeights, validateInput } from '../../utils/algorithmUtils';
 
@@ -65,7 +63,6 @@ const AlgorithmAnimation: React.FC = () => {
           onKeyDown={(event) => { if (event.key === 'Enter') applyHeights(); }}
           placeholder="例如：1, 8, 6, 2, 5, 4, 8, 3, 7"
         />
-        <AlgorithmThoughtModal />
         <button className="input-btn" onClick={randomize}>随机生成</button>
         <button className="input-btn apply" onClick={applyHeights}>应用</button>
         {inputError && <span className="input-error" role="alert">{inputError}</span>}
@@ -89,6 +86,12 @@ const AlgorithmAnimation: React.FC = () => {
             <div className="intuition-strip" aria-live="polite">
               <span className="intuition-step">{frame?.operation === 'move' ? '为什么移动？' : frame?.operation === 'compare' ? '这一步怎么算？' : '读图提示'}</span>
               <p>{frame?.decision ?? '容器面积 = 较短边高度 × 两边索引差；先从最宽的两端开始。'}</p>
+            </div>
+            <div className="step-explanation" aria-label="当前步骤解释">
+              <div><b>正在看</b><span>{frame?.operation === 'move' ? `索引 ${frame.eliminatedRange?.[0]} 的短边` : `索引 ${frame?.leftPointer} 与 ${frame?.rightPointer}`}</span></div>
+              <div><b>水位 / 宽度</b><span>{frame?.limitingHeight ?? Math.min(state.heightArray[frame?.leftPointer ?? 0] ?? 0, state.heightArray[frame?.rightPointer ?? state.heightArray.length - 1] ?? 0)} × {frame?.currentWidth ?? Math.max(0, (frame?.rightPointer ?? state.heightArray.length - 1) - (frame?.leftPointer ?? 0))}</span></div>
+              <div><b>这一帧结果</b><span>{frame?.operation === 'move' ? `排除索引 ${frame.eliminatedRange?.[0]}，保留区间 [${frame.leftPointer}, ${frame.rightPointer}]` : frame?.operation === 'done' ? `区间收敛，答案 ${frame.maxArea}` : frame?.operation === 'update' ? `新纪录 ${frame.currentArea}，最优边界 [${frame.bestLeftPointer}, ${frame.bestRightPointer}]` : frame?.operation === 'compare' ? `面积 ${frame.currentArea}，当前最大 ${frame.maxArea}` : '从两端开始，先检查最大宽度'}</span></div>
+              <div><b>下一步</b><span>{frame?.operation === 'move' ? '只移动较短边，保留其他候选' : frame?.operation === 'done' ? '搜索结束' : frame?.operation === 'update' ? '按短边决定移动方向' : frame?.operation === 'compare' ? '比较并更新历史最大值' : '计算水位和宽度'}</span></div>
             </div>
             <VerticalBars
               key={heightsKey}

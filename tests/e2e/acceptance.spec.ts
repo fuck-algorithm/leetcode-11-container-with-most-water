@@ -87,9 +87,14 @@ test('E2E-006 操作、解说和画布随步骤同步', async ({ page }) => {
   await expect(page.locator('.water-area')).toHaveCount(1);
   await expect(page.locator('.intuition-strip')).toContainText('面积 =');
   await expect(page.locator('.area-label')).toContainText('面积 1 × 8 = 8');
+  await expect(page.locator('.intuition-strip')).toContainText('水位');
+  await expect(page.getByLabel('当前步骤解释')).toContainText('索引 0 与 8');
+  await expect(page.getByLabel('当前步骤解释')).toContainText('面积 8');
+  await expect(page.getByLabel('当前步骤解释')).toContainText('比较并更新历史最大值');
   await expect(page.locator('.code-line.is-active').first()).toHaveAttribute('data-anchor', 'compare-area');
   await page.getByLabel('下一步').click();
   await expect(page.locator('.operation-badge')).toHaveAttribute('data-operation', 'update');
+  await expect(page.getByLabel('当前步骤解释')).toContainText('新纪录 8');
   await expect(page.locator('.code-line.is-active').first()).toHaveAttribute('data-anchor', 'update');
   await expect(page.getByLabel('关键变量')).toContainText('res');
   await page.getByLabel('代码语言').selectOption('Go');
@@ -125,11 +130,21 @@ test('E2E-009 画布缩放且步进不重置视角', async ({ page }) => {
   await expect.poll(() => scene.getAttribute('transform')).toContain('scale(1.2)');
 });
 
-test('E2E-010 算法思路弹窗可打开和关闭', async ({ page }) => {
+test('E2E-010 题目描述和算法思路是两个独立弹窗', async ({ page }) => {
   await page.goto('/');
-  await page.getByText('算法思路', { exact: true }).click();
-  await expect(page.getByRole('dialog', { name: '为什么移动较短边？' })).toBeVisible();
-  await page.getByLabel('关闭算法思路').click();
+  await expect(page.getByRole('button', { name: '题目描述' })).toBeVisible();
+  await expect(page.getByLabel('题目信息').getByRole('button', { name: '算法思路' })).toBeVisible();
+
+  await page.getByRole('button', { name: '题目描述' }).click();
+  await expect(page.getByRole('dialog', { name: '题目描述：盛最多水的容器' })).toBeVisible();
+  await expect(page.getByText(/输出：49/)).toBeVisible();
+  await page.keyboard.press('Escape');
+  await expect(page.getByRole('dialog')).toHaveCount(0);
+
+  await page.getByLabel('题目信息').getByRole('button', { name: '算法思路' }).click();
+  await expect(page.getByRole('dialog', { name: '算法思路：双指针为什么正确？' })).toBeVisible();
+  await expect(page.getByText('为什么不漏掉答案')).toBeVisible();
+  await page.keyboard.press('Escape');
   await expect(page.getByRole('dialog')).toHaveCount(0);
   await expect(page.locator('.operation-badge')).toBeVisible();
   await expect(page.locator('.step-narration')).toBeVisible();

@@ -4,3 +4,16 @@
 .thought-modal h2 { margin: 0; color: #24463d; font-size: 16px; }
 .thought-modal header button { width: 30px; height: 30px; border: 0; border-radius: 50%; color: #456158; background: #edf3f0; cursor: pointer; font-size: 19px; }
 .thought-modal p { margin: 10px 0 0; color: #49645b; font-size: 13px; line-height: 1.7; }
+.problem-modal { max-height: min(82vh, 720px); overflow: auto; }
+.problem-content h3 { margin: 16px 0 6px; color: #24463d; font-size: 12px; }
+.problem-content p { margin: 0; }
+.problem-content pre { overflow: auto; margin: 0; padding: 10px; border: 1px solid #e1ebe6; border-radius: 7px; color: #315e52; background: #f6faf8; font: 12px/1.7 ui-monospace, monospace; white-space: pre-wrap; }
+.problem-content ul { margin: 4px 0 0; padding-left: 20px; color: #49645b; font-size: 12px; line-height: 1.8; }
+.problem-formula, .proof-card { display: grid; gap: 4px; margin-top: 12px; padding: 11px 12px; border: 1px solid #dcebe5; border-radius: 8px; color: #315e52; background: #f4faf7; font-size: 12px; }
+.problem-formula span { color: #126b56; font-weight: 750; }
+.problem-formula small { color: #6b8178; font-size: 10px; }
+.thought-content { display: grid; gap: 8px; }
+.thought-content p { margin: 0; }
+.proof-card b { color: #126b56; font-size: 12px; }
+.proof-card span { color: #49645b; font-size: 12px; line-height: 1.6; }
+.thought-example { padding: 9px 10px; border-left: 3px solid #e5a93d; border-radius: 4px; background: #fff9ed; }
