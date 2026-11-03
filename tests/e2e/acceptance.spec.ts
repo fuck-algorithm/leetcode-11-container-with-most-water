@@ -37,7 +37,25 @@ test('E2E-001 单屏首屏与画布空间预算', async ({ page }) => {
   }
 });
 
-test('E2E-002 调整视口时短屏画布模式同步切换', async ({ page }) => {
+test('E2E-002 手机宽度下步骤提示不覆盖柱图', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/');
+  for (let frame = 0; frame < 4; frame += 1) await page.getByLabel('下一步').click();
+  await expect(page.locator('.step-indicator strong')).toHaveText('5');
+  await expect(page.locator('.step-explanation')).toBeHidden();
+  await expect(page.locator('.intuition-strip')).toContainText('水位取较短边 7');
+  const boxes = await page.evaluate(() => {
+    const svg = document.querySelector('.bars-svg')!.getBoundingClientRect();
+    const stage = document.querySelector('.canvas-stage')!.getBoundingClientRect();
+    return [...document.querySelectorAll('.bar-shape')].map((shape) => {
+      const box = shape.getBoundingClientRect();
+      return box.top >= svg.top && box.bottom <= stage.bottom;
+    });
+  });
+  expect(boxes.every(Boolean)).toBe(true);
+});
+
+test('E2E-003 调整视口时短屏画布模式同步切换', async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto('/');
   const stage = page.locator('.canvas-stage');

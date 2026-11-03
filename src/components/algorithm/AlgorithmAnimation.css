@@ -131,7 +131,7 @@
 @media (max-width: 760px) {
   .canvas-stage.has-explanation .canvas-legend { max-width: calc(100% - 12px); }
   .canvas-stage.has-explanation .step-explanation { top: 78px; right: 8px; width: min(210px, 52%); }
-  .canvas-stage.has-explanation.brute-stage .step-explanation { display: none; }
+  .canvas-stage.compact-stage .step-explanation { display: none; }
 }
 @media (max-height: 700px) {
   .canvas-stage .step-explanation,
