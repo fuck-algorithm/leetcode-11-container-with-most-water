@@ -64,14 +64,17 @@ test('E2E-004 随机数据', async ({ page }) => {
   await expect(page.locator('.bar-node')).toHaveCount(await page.locator('#heights-input').evaluate((input) => (input as HTMLInputElement).value.split(',').length));
 });
 
-test('E2E-005 单解法模式无需语言切换', async ({ page }) => {
+test('E2E-005 多解法仍支持代码语言切换与记忆', async ({ page }) => {
   await page.goto('/');
   await expect(page.locator('.canvas-card')).toBeVisible();
   await expect(page.getByLabel('算法代码与变量')).toBeVisible();
   await expect(page.getByLabel('代码语言')).toHaveValue('Java');
   await page.getByLabel('代码语言').selectOption('Python');
+  await page.getByRole('tab', { name: '暴力枚举 O(n²)' }).click();
+  await expect(page.locator('.code-list')).toHaveAttribute('aria-label', 'Python 暴力枚举实现');
   await page.reload();
   await expect(page.getByLabel('代码语言')).toHaveValue('Python');
+  await expect(page.locator('.code-list')).toHaveAttribute('aria-label', 'Python 双指针实现');
 });
 
 test('E2E-006 操作、解说和画布随步骤同步', async ({ page }) => {
@@ -130,14 +133,41 @@ test('E2E-010 算法思路弹窗可打开和关闭', async ({ page }) => {
   await expect(page.locator('.step-narration')).toBeVisible();
 });
 
-test('E2E-011 当前唯一解法可完整播放', async ({ page }) => {
+test('E2E-011 多解法视图隔离且均可完整播放', async ({ page }, testInfo) => {
   await page.goto('/');
   const progress = page.getByLabel('动画进度');
   await progress.fill(await progress.getAttribute('max') ?? '0');
   await expect(page.locator('.operation-badge')).toHaveAttribute('data-operation', 'done');
   await expect(page.locator('.canvas-metrics')).toContainText('49');
   await expect(page.locator('.bar-node[data-status="best"]')).toHaveCount(2);
-  await expect(page.locator('.water-area')).toHaveCount(0);
+
+  await page.getByRole('tab', { name: '暴力枚举 O(n²)' }).click();
+  await expect(page.getByRole('tab', { name: '暴力枚举 O(n²)' })).toHaveAttribute('aria-selected', 'true');
+  await expect(page.locator('.step-indicator strong')).toHaveText('1');
+  await expect(page.locator('.code-list')).toHaveAttribute('aria-label', 'Java 暴力枚举实现');
+  await expect(page.locator('.complexity')).toContainText('O(n²)');
+  await progress.fill(await progress.getAttribute('max') ?? '0');
+  await expect(page.locator('.operation-badge')).toHaveAttribute('data-operation', 'done');
+  await expect(page.locator('.canvas-metrics')).toContainText('49');
+
+  await page.getByRole('tab', { name: '双指针 O(n)' }).click();
+  await expect(page.locator('.step-indicator strong')).toHaveText('1');
+  await expect(page.locator('.code-list')).toHaveAttribute('aria-label', 'Java 双指针实现');
+  await page.screenshot({ path: testInfo.outputPath('two-pointer-step-1.png') });
+  await page.getByLabel('下一步').click();
+  await page.screenshot({ path: testInfo.outputPath('two-pointer-step-2.png') });
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.getByLabel('下一步').click();
+  await expect(page.locator('.step-narration')).toContainText('面积');
+  await page.screenshot({ path: testInfo.outputPath('reduced-motion.png') });
+});
+
+test('E2E-016 1x 双指针动画完整播放并输出录屏', async ({ page }) => {
+  await page.goto('/');
+  await page.getByLabel('播放速度').selectOption('800');
+  await page.getByRole('button', { name: '播放' }).click();
+  await expect(page.locator('.operation-badge')).toHaveAttribute('data-operation', 'done', { timeout: 120_000 });
+  await expect(page.locator('.canvas-metrics')).toContainText('49');
 });
 
 test('E2E-012 操作后无旧节点残留', async ({ page }) => {

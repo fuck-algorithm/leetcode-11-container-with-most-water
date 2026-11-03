@@ -60,18 +60,6 @@ const VerticalBars: React.FC<VerticalBarsProps> = ({ heights, leftPointer, right
     const rightX = startX + visualRight * slot + barWidth / 2;
     const currentHeight = Math.min(heights[visualLeft] ?? 0, heights[visualRight] ?? 0);
     const waterTop = y(currentHeight);
-    const bestIndices = new Set<number>();
-
-    if (maxArea > 0) {
-      for (let left = 0; left < heights.length; left += 1) {
-        for (let right = left + 1; right < heights.length; right += 1) {
-          if (Math.min(heights[left], heights[right]) * (right - left) === maxArea) {
-            bestIndices.add(left);
-            bestIndices.add(right);
-          }
-        }
-      }
-    }
 
     svg.attr('viewBox', `0 0 ${width} ${height}`).attr('preserveAspectRatio', 'none');
     const scene = svg.selectAll<SVGGElement, number>('g.scene').data([0]).join('g').attr('class', 'scene');

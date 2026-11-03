@@ -2,7 +2,7 @@ import React from 'react';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import App from '../../src/App';
-import { generateTwoPointerFrames, validateInput } from '../../src/utils/algorithmUtils';
+import { generateBruteForceFrames, generateTwoPointerFrames, validateInput } from '../../src/utils/algorithmUtils';
 
 afterEach(() => { cleanup(); localStorage.clear(); vi.restoreAllMocks(); });
 
@@ -12,6 +12,19 @@ describe('算法演示输入与步骤注册', () => {
     expect(validateInput([1])).toMatchObject({ valid: false });
     expect(validateInput([1, -2])).toMatchObject({ valid: false });
     expect(validateInput([1, 2.5])).toMatchObject({ valid: false });
+  });
+
+  it('注册表为双指针与暴力枚举提供独立步骤、代码锚点和正确结果', () => {
+    const heights = [1, 8, 6, 2, 5, 4, 8, 3, 7];
+    const twoPointer = generateTwoPointerFrames(heights);
+    const bruteForce = generateBruteForceFrames(heights);
+    expect(twoPointer.at(-1)?.maxArea).toBe(49);
+    expect(bruteForce.at(-1)?.maxArea).toBe(49);
+    expect(twoPointer).not.toBe(bruteForce);
+    expect(bruteForce.some((frame) => frame.codeAnchor === 'brute-compare')).toBe(true);
+    expect(bruteForce.some((frame) => frame.codeAnchor === 'brute-move')).toBe(true);
+    expect(bruteForce.every((frame) => frame.narration.length > 10)).toBe(true);
+    expect(() => generateBruteForceFrames(Array(10).fill(1))).toThrow(RangeError);
   });
 
   it('合法输入生成稳定、有语义步骤且最终答案正确的快照', () => {

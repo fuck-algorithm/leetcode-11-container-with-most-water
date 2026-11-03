@@ -134,6 +134,77 @@ export function generateTwoPointerFrames(heights: number[]): FrameSnapshot[] {
   return frames;
 }
 
+export function generateBruteForceFrames(heights: number[]): FrameSnapshot[] {
+  if (heights.length > 9) throw new RangeError('暴力枚举最多支持 9 个高度值，以保持步骤数量适合交互演示');
+  const frames: FrameSnapshot[] = [];
+  let maxArea = 0;
+  let bestLeftPointer = 0;
+  let bestRightPointer = Math.max(0, heights.length - 1);
+  const append = (frame: FrameSnapshot) => frames.push(frame);
+
+  append({
+    leftPointer: 0, rightPointer: Math.max(0, heights.length - 1), maxArea: 0, currentArea: 0,
+    isKeyFrame: true, description: '初始化枚举状态，从最左侧的容器组合开始检查。',
+    operation: 'init', operationLabel: '初始化枚举',
+    narration: '暴力法保留每一种左右边界组合，因为只有逐对检查才能保证没有候选容器遗漏。',
+    codeAnchor: 'brute-init', variables: { i: 0, j: 1, res: 0, checked: 0 },
+  });
+
+  let checked = 0;
+  for (let left = 0; left < heights.length - 1; left += 1) {
+    for (let right = left + 1; right < heights.length; right += 1) {
+      const currentArea = Math.min(heights[left], heights[right]) * (right - left);
+      checked += 1;
+      const previousMax = maxArea;
+      const isNewMax = currentArea > maxArea;
+      append({
+        leftPointer: left, rightPointer: right, maxArea: previousMax, currentArea, isKeyFrame: false,
+        description: `检查索引 ${left} 与 ${right}，容器面积为 ${currentArea}。`,
+        operation: 'compare', operationLabel: '枚举并比较',
+        narration: `检查边界 ${left} 和 ${right}，较短边 ${Math.min(heights[left], heights[right])} 乘以宽度 ${right - left}，得到面积 ${currentArea}。`,
+        candidateLeftPointer: left, candidateRightPointer: right,
+        bestLeftPointer, bestRightPointer, codeAnchor: 'brute-compare',
+        variables: { i: left, j: right, res: previousMax, area: currentArea, checked },
+      });
+      if (isNewMax) {
+        maxArea = currentArea;
+        bestLeftPointer = left;
+        bestRightPointer = right;
+        append({
+          leftPointer: left, rightPointer: right, maxArea, currentArea, isKeyFrame: true,
+          description: `面积 ${currentArea} 创下新纪录，保存当前边界。`,
+          operation: 'update', operationLabel: '更新最大值',
+          narration: `面积 ${currentArea} 大于此前最大值 ${previousMax}，因此将索引 ${left} 到 ${right} 记录为当前最优容器。`,
+          candidateLeftPointer: left, candidateRightPointer: right,
+          bestLeftPointer: left, bestRightPointer: right, codeAnchor: 'brute-update',
+          variables: { i: left, j: right, res: maxArea, area: currentArea, checked },
+        });
+      }
+      if (right < heights.length - 1) {
+        append({
+          leftPointer: left, rightPointer: right + 1, maxArea, currentArea, isKeyFrame: false,
+          description: `当前组合已检查，右边界向内移动以枚举下一种组合。`,
+          operation: 'move', operationLabel: '移动枚举边界',
+          narration: `边界 ${left} 到 ${right} 已计算完成，固定左端并右移一格，下一步检查索引 ${left} 和 ${right + 1}。`,
+          candidateLeftPointer: left, candidateRightPointer: right,
+          bestLeftPointer, bestRightPointer, codeAnchor: 'brute-move',
+          variables: { i: left, j: right + 1, res: maxArea, checked },
+        });
+      }
+    }
+  }
+
+  append({
+    leftPointer: bestLeftPointer, rightPointer: bestRightPointer, maxArea, currentArea: 0,
+    isKeyFrame: true, description: `所有边界组合均已检查，最大面积为 ${maxArea}。`,
+    operation: 'done', operationLabel: '枚举完成',
+    narration: `共检查 ${checked} 种边界组合，没有剩余候选；面积最大的容器位于索引 ${bestLeftPointer} 到 ${bestRightPointer}，答案为 ${maxArea}。`,
+    bestLeftPointer, bestRightPointer, codeAnchor: 'return',
+    variables: { i: bestLeftPointer, j: bestRightPointer, res: maxArea, checked },
+  });
+  return frames;
+}
+
 // 计算示例数据的所有帧
 export function getExampleFrames(): FrameSnapshot[] {
   const exampleHeights = [1, 8, 6, 2, 5, 4, 8, 3, 7];

@@ -19,6 +19,7 @@ const AlgorithmAnimation: React.FC = () => {
     getCurrentFrameData,
     setSpeed,
     setHeightArray,
+    setAlgorithmType,
     seek,
   } = useAlgorithmAnimation();
   const frame = getCurrentFrameData();
@@ -34,6 +35,10 @@ const AlgorithmAnimation: React.FC = () => {
     const validation = validateInput(heights);
     if (!validation.valid || tokens.some((token) => token === '')) {
       setInputError(`${validation.error ?? '输入不能为空'}，例如：1, 8, 6, 2, 5`);
+      return;
+    }
+    if (state.algorithmType === 'bruteForce' && heights.length > 9) {
+      setInputError('暴力枚举仅支持最多 9 个高度值，请切换双指针或缩短输入。');
       return;
     }
     setInputError('');
@@ -66,17 +71,22 @@ const AlgorithmAnimation: React.FC = () => {
         {inputError && <span className="input-error" role="alert">{inputError}</span>}
       </div>
 
+      <div className="algorithm-tabs" role="tablist" aria-label="选择算法解法">
+        <button type="button" role="tab" aria-selected={state.algorithmType === 'twoPointer'} onClick={() => setAlgorithmType('twoPointer')}>双指针 O(n)</button>
+        <button type="button" role="tab" aria-selected={state.algorithmType === 'bruteForce'} onClick={() => setAlgorithmType('bruteForce')}>暴力枚举 O(n²)</button>
+        {state.algorithmType === 'bruteForce' && <span className="algorithm-limit">演示数据上限：9 项</span>}
+      </div>
       <div className="visual-workspace">
-        <section className="canvas-card" aria-label="双指针算法画布">
-        <header className="canvas-header">
+        <section className="canvas-card" aria-label={`${state.algorithmType === 'bruteForce' ? '暴力枚举' : '双指针'}算法画布`}>
+          <header className="canvas-header">
           <div className="canvas-heading">
-            <span className="eyebrow">TWO POINTERS · CONTAINER WITH MOST WATER</span>
-            <h2>盛水面积如何被一步步缩小搜索范围</h2>
+            <span className="eyebrow">{state.algorithmType === 'bruteForce' ? 'BRUTE FORCE · O(n²)' : 'TWO POINTERS · O(n)'}</span>
+            <h2>{state.algorithmType === 'bruteForce' ? '逐对枚举每一种左右边界组合' : '盛水面积如何被一步步缩小搜索范围'}</h2>
           </div>
           <div className="step-indicator"><span>STEP</span><strong>{state.currentFrame + 1}</strong><i>/</i>{state.totalFrames}</div>
         </header>
-        <div className="canvas-stage">
-          <VerticalBars
+          <div className="canvas-stage">
+            <VerticalBars
             key={heightsKey}
             heights={state.heightArray}
             leftPointer={frame?.leftPointer ?? 0}
@@ -91,14 +101,14 @@ const AlgorithmAnimation: React.FC = () => {
             isDone={frame?.operation === 'done'}
             showCandidate={frame?.operation === 'compare' || frame?.operation === 'move'}
           />
-          <div className="canvas-legend" aria-label="画布图例" data-testid="canvas-legend">
+            <div className="canvas-legend" aria-label="画布图例" data-testid="canvas-legend">
             <span><i className="legend-swatch left" />当前焦点</span>
             <span><i className="legend-swatch right" />比较对象</span>
             <span><i className="legend-swatch water" />当前容器</span>
             <span><i className="legend-swatch best" />当前最优解</span>
           </div>
         </div>
-        <footer className="canvas-caption" aria-live="polite">
+          <footer className="canvas-caption" aria-live="polite">
           <span className="operation-badge" data-operation={frame?.operation ?? 'init'}>{frame?.operationLabel ?? '初始化'}</span>
           <p className="step-narration">{frame?.narration ?? '左右指针从数组两端开始，准备寻找最大容积。'}</p>
           <div className="canvas-metrics">
@@ -109,10 +119,11 @@ const AlgorithmAnimation: React.FC = () => {
         </footer>
       </section>
 
-        <CodePanel activeAnchor={frame?.codeAnchor ?? 'init'} variables={frame?.variables ?? { i: 0, j: state.heightArray.length - 1, res: 0 }} />
+        <CodePanel activeAnchor={frame?.codeAnchor ?? 'init'} variables={frame?.variables ?? { i: 0, j: state.heightArray.length - 1, res: 0 }} algorithmType={state.algorithmType} />
       </div>
 
       <ControlPanel
+        key={state.algorithmType}
         isPlaying={state.isPlaying}
         togglePlay={togglePlay}
         reset={reset}

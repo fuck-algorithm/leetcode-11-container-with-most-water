@@ -4,9 +4,11 @@ type Language = 'Java' | 'Python' | 'Go' | 'JavaScript';
 interface CodePanelProps {
   activeAnchor: string;
   variables: Record<string, string | number>;
+  algorithmType: 'bruteForce' | 'twoPointer';
 }
 
-const code: Record<Language, { anchor: string; text: string }[]> = {
+type CodeLine = { anchor: string; text: string };
+const code: Record<Language, CodeLine[]> = {
   Java: [
     { anchor: 'init', text: 'int[] height = input;' },
     { anchor: 'init', text: 'int i = 0, j = height.length - 1;' },
@@ -61,9 +63,48 @@ const code: Record<Language, { anchor: string; text: string }[]> = {
     { anchor: 'return', text: 'return res;' },
   ],
 };
+const bruteForceCode: Record<Language, CodeLine[]> = {
+  Java: [
+    { anchor: 'brute-init', text: 'int res = 0;' },
+    { anchor: 'brute-compare', text: 'for (int i = 0; i < n - 1; i++) {' },
+    { anchor: 'brute-compare', text: '  for (int j = i + 1; j < n; j++) {' },
+    { anchor: 'brute-compare', text: '    int area = Math.min(h[i], h[j]) * (j - i);' },
+    { anchor: 'brute-update', text: '    res = Math.max(res, area);' },
+    { anchor: 'brute-move', text: '  } // 尝试下一条右边界' },
+    { anchor: 'return', text: '}' },
+    { anchor: 'return', text: 'return res;' },
+  ],
+  Python: [
+    { anchor: 'brute-init', text: 'res = 0' },
+    { anchor: 'brute-compare', text: 'for i in range(len(height) - 1):' },
+    { anchor: 'brute-compare', text: '    for j in range(i + 1, len(height)):' },
+    { anchor: 'brute-compare', text: '        area = min(height[i], height[j]) * (j - i)' },
+    { anchor: 'brute-update', text: '        res = max(res, area)' },
+    { anchor: 'brute-move', text: '        # 继续枚举下一组边界' },
+    { anchor: 'return', text: 'return res' },
+  ],
+  Go: [
+    { anchor: 'brute-init', text: 'res := 0' },
+    { anchor: 'brute-compare', text: 'for i := 0; i < len(height)-1; i++ {' },
+    { anchor: 'brute-compare', text: '    for j := i+1; j < len(height); j++ {' },
+    { anchor: 'brute-compare', text: '        area := min(height[i], height[j]) * (j-i)' },
+    { anchor: 'brute-update', text: '        res = max(res, area)' },
+    { anchor: 'brute-move', text: '    } // 尝试下一条右边界' },
+    { anchor: 'return', text: 'return res' },
+  ],
+  JavaScript: [
+    { anchor: 'brute-init', text: 'let res = 0;' },
+    { anchor: 'brute-compare', text: 'for (let i = 0; i < height.length - 1; i++) {' },
+    { anchor: 'brute-compare', text: '  for (let j = i + 1; j < height.length; j++) {' },
+    { anchor: 'brute-compare', text: '    const area = Math.min(height[i], height[j]) * (j - i);' },
+    { anchor: 'brute-update', text: '    res = Math.max(res, area);' },
+    { anchor: 'brute-move', text: '  } // 尝试下一条右边界' },
+    { anchor: 'return', text: 'return res;' },
+  ],
+};
 const languages = Object.keys(code) as Language[];
 
-const CodePanel: React.FC<CodePanelProps> = ({ activeAnchor, variables }) => {
+const CodePanel: React.FC<CodePanelProps> = ({ activeAnchor, variables, algorithmType }) => {
   const [language, setLanguage] = useState<Language>(() => {
     const saved = localStorage.getItem('codeLanguage') as Language | null;
     return saved && languages.includes(saved) ? saved : 'Java';
@@ -81,8 +122,8 @@ const CodePanel: React.FC<CodePanelProps> = ({ activeAnchor, variables }) => {
           {languages.map((item) => <option key={item}>{item}</option>)}
         </select>
       </div>
-      <pre className="code-list" aria-label={`${language} 双指针实现`}>
-        {code[language].map((line, index) => (
+      <pre className="code-list" aria-label={`${language} ${algorithmType === 'bruteForce' ? '暴力枚举' : '双指针'}实现`}>
+        {(algorithmType === 'bruteForce' ? bruteForceCode[language] : code[language]).map((line, index) => (
           <div className={`code-line${line.anchor === activeAnchor ? ' is-active' : ''}`} data-anchor={line.anchor} key={`${index}-${line.anchor}`}>
             <span className="line-number">{String(index + 1).padStart(2, '0')}</span>
             <code>{line.text}</code>
@@ -95,7 +136,7 @@ const CodePanel: React.FC<CodePanelProps> = ({ activeAnchor, variables }) => {
           <div className="watch-row" key={name}><code>{name}</code><b>{value}</b></div>
         ))}
       </div>
-      <div className="complexity"><span>时间 <b>O(n)</b></span><span>空间 <b>O(1)</b></span></div>
+      <div className="complexity"><span>时间 <b>{algorithmType === 'bruteForce' ? 'O(n²)' : 'O(n)'}</b></span><span>空间 <b>O(1)</b></span></div>
     </aside>
   );
 };

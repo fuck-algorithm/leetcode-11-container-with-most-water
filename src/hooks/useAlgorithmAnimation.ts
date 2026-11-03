@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { AlgorithmState, FrameSnapshot } from '../types/algorithm';
-import { generateTwoPointerFrames, getDefaultHeights } from '../utils/algorithmUtils';
+import { generateBruteForceFrames, generateTwoPointerFrames, getDefaultHeights } from '../utils/algorithmUtils';
 
 export function useAlgorithmAnimation() {
   const [state, setState] = useState<AlgorithmState>({
@@ -17,7 +17,9 @@ export function useAlgorithmAnimation() {
   
   // 初始化帧数据
   useEffect(() => {
-    const frames = generateTwoPointerFrames(state.heightArray);
+    const frames = state.algorithmType === 'bruteForce'
+      ? generateBruteForceFrames(state.heightArray)
+      : generateTwoPointerFrames(state.heightArray);
     setState(prev => ({
       ...prev,
       frameSnapshots: frames,
@@ -134,6 +136,10 @@ export function useAlgorithmAnimation() {
     }));
   };
   
+  const setAlgorithmType = (algorithmType: AlgorithmState['algorithmType']) => {
+    setState((prev) => ({ ...prev, algorithmType, currentFrame: 0, isPlaying: false }));
+  };
+
   // 更改高度数组
   const setHeightArray = (heights: number[]) => {
     setState(prev => ({
@@ -153,6 +159,7 @@ export function useAlgorithmAnimation() {
     getCurrentFrameData,
     seek,
     setSpeed,
-    setHeightArray
+    setHeightArray,
+    setAlgorithmType
   };
 } 

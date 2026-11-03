@@ -1,4 +1,26 @@
 // 动画帧快照数据类型
+export type AlgorithmType = 'bruteForce' | 'twoPointer';
+
+export interface AlgorithmFrame {
+  id: string;
+  title: string;
+  description: string;
+  operation: 'init' | 'compare' | 'update' | 'move' | 'done';
+  operationLabel: string;
+  narration: string;
+  codeAnchor: string;
+  variables: Record<string, string | number>;
+  leftPointer: number;
+  rightPointer: number;
+  maxArea: number;
+  currentArea: number;
+  isKeyFrame: boolean;
+  candidateLeftPointer?: number;
+  candidateRightPointer?: number;
+  bestLeftPointer?: number;
+  bestRightPointer?: number;
+}
+
 export interface FrameSnapshot {
   // 左指针位置
   leftPointer: number;
@@ -19,7 +41,7 @@ export interface FrameSnapshot {
   candidateRightPointer?: number;
   bestLeftPointer?: number;
   bestRightPointer?: number;
-  codeAnchor: 'init' | 'compare-area' | 'update' | 'move-left' | 'move-right' | 'return';
+  codeAnchor: 'init' | 'compare-area' | 'update' | 'move-left' | 'move-right' | 'return' | 'brute-init' | 'brute-compare' | 'brute-update' | 'brute-move';
   variables: Record<string, string | number>;
 }
 
@@ -32,7 +54,7 @@ export interface AlgorithmState {
   // 总帧数
   totalFrames: number;
   // 算法类型
-  algorithmType: 'bruteForce' | 'twoPointer';
+  algorithmType: AlgorithmType;
   // 动画数据快照（每帧的关键数据）
   frameSnapshots: FrameSnapshot[];
   // 当前选中的高度数组
