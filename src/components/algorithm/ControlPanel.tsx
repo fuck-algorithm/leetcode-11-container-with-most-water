@@ -11,8 +11,7 @@ interface ControlPanelProps {
   totalFrames: number;
   animationSpeed: number;
   setSpeed: (speed: number) => void;
-  description: string;
-  onRandomize?: () => void;
+  seek: (frame: number) => void;
 }
 
 const ControlPanel: React.FC<ControlPanelProps> = ({
@@ -25,80 +24,33 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
   totalFrames,
   animationSpeed,
   setSpeed,
-  description,
-  onRandomize,
-}) => {
-  const progress =
-    totalFrames > 1 ? (currentFrame / (totalFrames - 1)) * 100 : 0;
-
-  return (
-    <div className="control-panel">
-      <div className="cp-progress-row">
-        <div className="cp-progress">
-          <div
-            className="cp-progress-bar"
-            style={{ width: `${progress}%` }}
-          />
-        </div>
-        <div className="cp-frame-counter">
-          {currentFrame + 1} / {totalFrames}
-        </div>
-      </div>
-
-      <div className="cp-description">{description}</div>
-
-      <div className="cp-buttons">
-        <button
-          className="cp-button"
-          onClick={prevStep}
-          disabled={currentFrame === 0}
-        >
-          上一步
-        </button>
-        <button className="cp-button" onClick={togglePlay}>
-          {isPlaying ? '暂停' : '播放'}
-        </button>
-        <button
-          className="cp-button"
-          onClick={nextStep}
-          disabled={currentFrame === totalFrames - 1}
-        >
-          下一步
-        </button>
-        <button className="cp-button" onClick={reset}>
-          重置
-        </button>
-        {onRandomize && (
-          <button
-            className="cp-button random"
-            onClick={onRandomize}
-            title="生成随机数据"
-          >
-            随机
-          </button>
-        )}
-      </div>
-
-      <div className="cp-speed-row">
-        <label htmlFor="speed-slider" className="cp-label">
-          速度:
-        </label>
-        <input
-          id="speed-slider"
-          className="cp-slider"
-          type="range"
-          min="100"
-          max="2000"
-          step="100"
-          value={animationSpeed}
-          onChange={(e) => setSpeed(Number(e.target.value))}
-        />
-        <span className="cp-speed-display">
-          {(animationSpeed / 1000).toFixed(1)}秒/步
-        </span>
-      </div>
+  seek,
+}) => (
+  <footer className="control-panel playback-footer" aria-label="动画控制">
+    <div className="cp-buttons">
+      <button className="cp-button secondary" onClick={prevStep} disabled={currentFrame === 0} aria-label="上一步">←</button>
+      <button className="cp-button play-button" onClick={togglePlay} aria-label={isPlaying ? '暂停' : '播放'}>{isPlaying ? '暂停' : '播放'}</button>
+      <button className="cp-button secondary" onClick={nextStep} disabled={currentFrame >= totalFrames - 1} aria-label="下一步">→</button>
+      <button className="cp-button secondary reset-button" onClick={reset}>重置</button>
     </div>
-  );
-};
+    <input
+      className="cp-progress"
+      type="range"
+      min={0}
+      max={Math.max(0, totalFrames - 1)}
+      value={Math.min(currentFrame, Math.max(0, totalFrames - 1))}
+      onChange={(event) => seek(Number(event.target.value))}
+      aria-label="动画进度"
+      style={{ '--progress': `${totalFrames > 1 ? currentFrame / (totalFrames - 1) * 100 : 0}%` } as React.CSSProperties}
+    />
+    <span className="cp-frame-counter">{currentFrame + 1} <i>/</i> {totalFrames}</span>
+    <label className="cp-speed-row">
+      <span>速度</span>
+      <select value={animationSpeed} onChange={(event) => setSpeed(Number(event.target.value))} aria-label="播放速度">
+        <option value={1200}>0.75×</option><option value={800}>1×</option><option value={400}>2×</option><option value={200}>4×</option>
+      </select>
+    </label>
+  </footer>
+);
 
 export default ControlPanel;

@@ -1,0 +1,8 @@
+.github-badge { display: inline-flex; align-items: center; gap: 6px; }
+.github-stars { color: #b07a12; font-size: 10px; font-weight: 700; }
+.community-float { position: fixed; right: 16px; bottom: 72px; z-index: 5; }
+.community-button { height: 36px; padding: 0 12px; border: 1px solid #16856b; border-radius: 18px; color: #fff; background: #16856b; box-shadow: 0 3px 12px #17382f24; cursor: pointer; font: inherit; font-size: 11px; }
+.community-popover { position: absolute; right: 0; bottom: 44px; width: 190px; padding: 10px; border: 1px solid #d7e2de; border-radius: 10px; background: #fff; box-shadow: 0 6px 24px #17382f1f; text-align: center; }
+.community-popover img { display: block; width: 100%; height: auto; aspect-ratio: 1; object-fit: contain; }
+.community-popover p { margin: 8px 0 0; color: #456158; font-size: 11px; }
+@media (max-width: 600px) { .community-float { right: 10px; bottom: 58px; } }

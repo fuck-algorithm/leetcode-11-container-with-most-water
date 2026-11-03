@@ -1,103 +1,53 @@
-/* src/components/algorithm/ControlPanel.css */
-
+.playback-footer { grid-template-columns: auto minmax(80px, 1fr) auto auto; }
 .control-panel {
-  padding: 12px;
-  background-color: #f8f9fa;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
-  display: flex;
-  flex-direction: column;
+  min-width: 0;
+  min-height: 48px;
+  display: grid;
+  grid-template-columns: auto minmax(80px, 1fr) auto auto;
+  align-items: center;
   gap: 12px;
-  width: 100%;
-  flex: 0 0 auto;
+  padding: 5px 10px;
+  border: 1px solid #d7e2de;
+  border-radius: 8px;
+  background: #fff;
 }
-
-.cp-progress-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.cp-progress {
-  flex: 1;
-  height: 10px;
-  background-color: #e0e0e0;
-  border-radius: 5px;
-  overflow: hidden;
-}
-
-.cp-progress-bar {
-  height: 100%;
-  background-color: #3498db;
-  transition: width 0.3s ease;
-}
-
-.cp-frame-counter {
-  font-size: 13px;
-  color: #666;
-  min-width: 60px;
-  text-align: right;
-}
-
-.cp-description {
-  padding: 8px 10px;
-  background-color: #fff;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  font-size: 14px;
-  min-height: 36px;
-  line-height: 1.5;
-}
-
-.cp-buttons {
-  display: flex;
-  gap: 8px;
-}
-
+.cp-buttons { display: flex; align-items: center; gap: 5px; }
 .cp-button {
-  flex: 1;
-  padding: 8px 10px;
-  background-color: #3498db;
-  color: #fff;
-  border: none;
-  border-radius: 4px;
+  min-width: 30px;
+  height: 30px;
+  padding: 0 9px;
+  border: 1px solid #dbe5e1;
+  border-radius: 6px;
+  color: #46645a;
+  background: #f8faf9;
   cursor: pointer;
-  font-size: 14px;
-  transition: opacity 0.2s;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 650;
 }
-
-.cp-button:hover {
-  opacity: 0.85;
+.cp-button:hover:not(:disabled) { border-color: #8dbcae; background: #eff7f3; }
+.cp-button:disabled { color: #afbbb6; cursor: default; }
+.cp-button.play-button { min-width: 58px; border-color: #16856b; color: #fff; background: #16856b; }
+.cp-button.play-button:hover { background: #116e58; }
+.cp-progress {
+  --progress: 0%;
+  width: 100%;
+  height: 5px;
+  margin: 0;
+  appearance: none;
+  border-radius: 5px;
+  outline: none;
+  background: linear-gradient(to right, #16856b var(--progress), #dfe8e4 var(--progress));
+  cursor: pointer;
 }
+.cp-progress::-webkit-slider-thumb { width: 13px; height: 13px; appearance: none; border: 2px solid #fff; border-radius: 50%; background: #16856b; box-shadow: 0 0 0 1px #16856b; }
+.cp-progress::-moz-range-thumb { width: 10px; height: 10px; border: 2px solid #fff; border-radius: 50%; background: #16856b; box-shadow: 0 0 0 1px #16856b; }
+.cp-frame-counter { color: #70857d; font-size: 10px; white-space: nowrap; }
+.cp-frame-counter i { padding: 0 3px; color: #b0bdb8; font-style: normal; }
+.cp-speed-row { display: flex; align-items: center; gap: 6px; color: #70857d; font-size: 10px; white-space: nowrap; }
+.cp-speed-row select { height: 27px; padding: 0 5px; border: 1px solid #dbe5e1; border-radius: 5px; color: #315e52; background: #fff; font-size: 10px; }
 
-.cp-button:disabled {
-  background-color: #bdc3c7;
-  cursor: not-allowed;
-  opacity: 1;
-}
-
-.cp-button.random {
-  background-color: #e67e22;
-}
-
-.cp-speed-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.cp-label {
-  font-size: 13px;
-  color: #666;
-}
-
-.cp-slider {
-  flex: 1;
-}
-
-.cp-speed-display {
-  font-size: 13px;
-  color: #666;
-  min-width: 64px;
-  text-align: right;
+@media (max-width: 560px) {
+  .control-panel { grid-template-columns: auto minmax(50px, 1fr) auto; gap: 7px; }
+  .reset-button, .cp-speed-row > span { display: none; }
 }

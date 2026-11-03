@@ -1,0 +1,19 @@
+.code-panel { min-width: 0; min-height: 0; display: flex; flex-direction: column; overflow: hidden; border: 1px solid #d7e2de; border-radius: 9px; background: #fbfcfb; }
+.code-panel-heading { flex: 0 0 38px; display: flex; align-items: center; justify-content: space-between; padding: 0 12px; border-bottom: 1px solid #e7eeea; color: #31584c; font-size: 12px; font-weight: 700; }
+.code-panel-heading select { max-width: 116px; height: 26px; padding: 0 6px; border: 1px solid #dbe5e1; border-radius: 5px; color: #58766c; background: #edf3f0; font-size: 10px; }
+.code-list { flex: 0 0 auto; margin: 0; padding: 10px 0; overflow: hidden; color: #456158; background: transparent; font: 10px/1.8 'SFMono-Regular', Consolas, monospace; }
+.code-line { min-width: max-content; display: flex; padding-right: 9px; border-left: 2px solid transparent; white-space: pre; }
+.code-line.is-active { border-left-color: #16856b; color: #174c3e; background: #eaf5f0; }
+.line-number { width: 34px; padding-right: 9px; color: #9aaca5; text-align: right; user-select: none; }
+.code-line.is-active .line-number { color: #16856b; font-weight: 700; }
+.code-line code { font: inherit; }
+.variable-watch { flex: 1 1 auto; min-height: 0; padding: 8px 11px; border-top: 1px solid #e7eeea; }
+.watch-heading { display: flex; justify-content: space-between; margin-bottom: 6px; color: #779087; font-size: 9px; font-weight: 750; letter-spacing: .07em; }
+.watch-heading span { color: #198568; }
+.watch-row { display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid #edf1ef; color: #456158; font-size: 11px; }
+.watch-row code { color: #71867f; font: 10px 'SFMono-Regular', Consolas, monospace; }
+.watch-row b { color: #203f35; font: 600 11px 'SFMono-Regular', Consolas, monospace; }
+.complexity { flex: 0 0 32px; display: flex; justify-content: space-between; padding: 7px 11px; border-top: 1px solid #e7eeea; color: #71867f; font-size: 9px; }
+.complexity b { margin-left: 4px; color: #315e52; font-family: monospace; }
+@media (max-width: 1099px) { .visual-workspace { grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(0, 1fr) clamp(180px, 22vh, 240px); } }
+@media (max-width: 760px) { .visual-workspace { grid-template-rows: minmax(0, 1fr) 180px; } .code-list { padding: 4px 0; line-height: 1.45; } .code-panel-heading { flex-basis: 30px; } .variable-watch { display: none; } .complexity { flex-basis: 26px; padding: 5px 10px; } }

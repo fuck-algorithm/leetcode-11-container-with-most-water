@@ -2,34 +2,54 @@ name: Deploy to GitHub Pages
 
 on:
   push:
-    branches:
-      - main # Or your default branch
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write # Required to push to gh-pages branch
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     steps:
-      - name: Checkout 🛎️
+      - name: Checkout
         uses: actions/checkout@v4
-
-      - name: Set up Node.js 🏗️
+      - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: '20' # Use the Node.js version appropriate for your project
-
-      - name: Install dependencies 📦
-        run: npm install
-
-      - name: Build project 🔨
+          node-version: '20'
+          cache: npm
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund || npm install --no-audit --no-fund
+      - name: Install Playwright Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Lint
+        run: npm run lint
+      - name: Type check
+        run: npm run type-check
+      - name: Unit tests and coverage
+        run: npm run test:coverage
+      - name: Browser acceptance tests
+        run: npm run test:e2e
+      - name: Build
         run: npm run build
-
-      - name: Deploy to GitHub Pages 🚀
-        uses: peaceiris/actions-gh-pages@v4
+        env:
+          VITE_APP_BASE: /${{ github.event.repository.name }}/
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./dist # The directory the build script outputs to
-          # publish_branch: gh-pages # The branch the action should deploy to. Defaults to gh-pages.
-          # user_name: 'github-actions[bot]' # Optional: The name to use for the deploy commit
-          # user_email: 'github-actions[bot]@users.noreply.github.com' # Optional: The email to use for the deploy commit 
+          path: ./dist
+      - name: Deploy Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

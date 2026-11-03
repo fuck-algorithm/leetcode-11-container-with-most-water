@@ -1,6 +1,8 @@
 import './App.css';
 import AlgorithmAnimation from './components/algorithm/AlgorithmAnimation';
-import GitHubIcon from './assets/github.svg';
+import { GitHubBadge } from './components/GitHubBadge';
+import { CommunityFloat } from './components/CommunityFloat';
+import './components/overlays.css';
 
 function App() {
   return (
@@ -14,17 +16,11 @@ function App() {
         >
           ← 返回LeetCode Hot 100
         </a>
-        <h1 className="app-title">盛最多水的容器 - 双指针法动画演示</h1>
-        <a
-          href="https://github.com/fuck-algorithm/leetcode-11-container-with-most-water"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="header-link"
-        >
-          <img src={GitHubIcon} alt="GitHub" className="github-icon" />
-        </a>
+        <h1 className="app-title"><a href="https://leetcode.cn/problems/container-with-most-water/" target="_blank" rel="noopener noreferrer">11. 盛最多水的容器</a></h1>
+        <GitHubBadge />
       </header>
       <AlgorithmAnimation />
+      <CommunityFloat />
     </div>
   );
 }

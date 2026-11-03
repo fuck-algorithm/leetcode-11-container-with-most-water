@@ -1,0 +1,187 @@
+import { expect, test } from '@playwright/test';
+
+test('E2E-001 单屏首屏与画布空间预算', async ({ page }) => {
+  for (const viewport of [{ width: 1920, height: 1080 }, { width: 1366, height: 768 }]) {
+    await page.setViewportSize(viewport);
+    await page.goto('/');
+    const metrics = await page.evaluate(() => {
+      const box = (selector: string) => document.querySelector(selector)!.getBoundingClientRect();
+      return {
+        scrollHeight: document.documentElement.scrollHeight,
+        height: innerHeight,
+        header: box('.app-header').height,
+        card: box('.canvas-card').height,
+        svg: box('.bars-svg').height,
+      };
+    });
+    expect(metrics.scrollHeight).toBe(metrics.height);
+    expect(metrics.header).toBeLessThanOrEqual(52);
+    expect(metrics.card / metrics.height).toBeGreaterThanOrEqual(viewport.width === 1366 ? 0.62 : 0.76);
+    expect(metrics.svg / metrics.height).toBeGreaterThanOrEqual(viewport.width === 1366 ? 0.5 : 0.66);
+    await page.waitForFunction(() => {
+      const bars = [...document.querySelectorAll<SVGRectElement>('.bar-shape')];
+      const svgHeight = document.querySelector('.bars-svg')!.getBoundingClientRect().height;
+      return bars.length >= 2 && bars.every((bar) => Number(bar.getAttribute('width')) > 0) && Math.max(...bars.map((bar) => Number(bar.getAttribute('height')))) / svgHeight > 0.3;
+    });
+    const plot = await page.locator('.bar-shape').evaluateAll((bars) => bars.map((bar) => Number(bar.getAttribute('height'))));
+    expect(Math.max(...plot) / metrics.svg).toBeGreaterThan(0.3);
+    await expect(page.locator('.operation-badge')).toBeVisible();
+    await expect(page.locator('.step-narration')).toBeVisible();
+    await expect(page.locator('[data-testid="canvas-legend"]')).toBeVisible();
+    await expect(page.getByLabel('算法代码与变量')).toBeVisible();
+    const workspace = await page.locator('.visual-workspace').evaluate((element) => ({ width: element.clientWidth, canvas: element.querySelector('.canvas-card')!.clientWidth, code: element.querySelector('.code-panel')!.clientWidth }));
+    expect(workspace.canvas / workspace.width).toBeGreaterThanOrEqual(0.68);
+    expect(workspace.code).toBeGreaterThanOrEqual(320);
+    expect(workspace.code).toBeLessThanOrEqual(400);
+    await page.screenshot({ path: `test-results/visual-${viewport.width}x${viewport.height}.png` });
+  }
+});
+
+test('E2E-002 外链行为', async ({ page }) => {
+  await page.goto('/');
+  const hot100 = page.locator('.header-link').first();
+  await expect(hot100).toHaveAttribute('href', 'https://fuck-algorithm.github.io/leetcode-hot-100/');
+  await expect(hot100).toHaveAttribute('target', '_blank');
+  await expect(page.getByRole('heading', { name: /11\. 盛最多水的容器/ }).locator('a')).toHaveAttribute('href', 'https://leetcode.cn/problems/container-with-most-water/');
+  await expect(page.locator('.github-badge')).toHaveAttribute('href', 'https://github.com/fuck-algorithm/leetcode-11-container-with-most-water');
+});
+
+test('E2E-003 非法输入不更新，合法输入重置动画', async ({ page }) => {
+  await page.goto('/');
+  await page.locator('#heights-input').fill('1, nope, 3');
+  await page.getByText('应用', { exact: true }).click();
+  await expect(page.getByRole('alert')).toBeVisible();
+  await expect(page.locator('.step-indicator strong')).toHaveText('1');
+  await page.locator('#heights-input').fill('2, 3, 4');
+  await page.getByText('应用', { exact: true }).click();
+  await expect(page.locator('.bar-node')).toHaveCount(3);
+  await expect(page.locator('.step-indicator strong')).toHaveText('1');
+});
+
+test('E2E-004 随机数据', async ({ page }) => {
+  await page.goto('/');
+  await page.getByText('随机生成').click();
+  await expect(page.locator('.bar-node')).toHaveCount(await page.locator('#heights-input').evaluate((input) => (input as HTMLInputElement).value.split(',').length));
+});
+
+test('E2E-005 单解法模式无需语言切换', async ({ page }) => {
+  await page.goto('/');
+  await expect(page.locator('.canvas-card')).toBeVisible();
+  await expect(page.getByLabel('算法代码与变量')).toBeVisible();
+  await expect(page.getByLabel('代码语言')).toHaveValue('Java');
+  await page.getByLabel('代码语言').selectOption('Python');
+  await page.reload();
+  await expect(page.getByLabel('代码语言')).toHaveValue('Python');
+});
+
+test('E2E-006 操作、解说和画布随步骤同步', async ({ page }) => {
+  await page.goto('/');
+  const narration = page.locator('.step-narration');
+  const before = await narration.textContent();
+  await page.getByLabel('下一步').click();
+  await expect(page.locator('.operation-badge')).toHaveAttribute('data-operation', 'compare');
+  await expect(narration).not.toHaveText(before ?? '');
+  await expect(page.locator('.water-area')).toHaveCount(1);
+  await expect(page.locator('.code-line.is-active').first()).toHaveAttribute('data-anchor', 'compare-area');
+  await page.getByLabel('下一步').click();
+  await expect(page.locator('.operation-badge')).toHaveAttribute('data-operation', 'update');
+  await expect(page.locator('.code-line.is-active').first()).toHaveAttribute('data-anchor', 'update');
+  await expect(page.getByLabel('关键变量')).toContainText('res');
+  await page.getByLabel('代码语言').selectOption('Go');
+  await expect(page.locator('.code-line.is-active').first()).toHaveAttribute('data-anchor', 'update');
+});
+
+test('E2E-007 方向键、空格和重置快捷键', async ({ page }) => {
+  await page.goto('/');
+  await page.keyboard.press('ArrowRight');
+  await expect(page.locator('.step-indicator strong')).toHaveText('2');
+  await page.keyboard.press('ArrowLeft');
+  await expect(page.locator('.step-indicator strong')).toHaveText('1');
+  await page.keyboard.press('Space');
+  await expect(page.getByLabel('暂停')).toBeVisible();
+  await page.keyboard.press('r');
+  await expect(page.locator('.step-indicator strong')).toHaveText('1');
+});
+
+test('E2E-008 拖动进度范围', async ({ page }) => {
+  await page.goto('/');
+  const progress = page.getByLabel('动画进度');
+  await progress.fill('5');
+  await expect(page.locator('.step-indicator strong')).toHaveText('6');
+});
+
+test('E2E-009 画布缩放且步进不重置视角', async ({ page }) => {
+  await page.goto('/');
+  const scene = page.locator('.scene');
+  await page.getByLabel('放大画布').click();
+  await expect.poll(() => scene.getAttribute('transform')).not.toBe('translate(0,0) scale(1)');
+  await expect.poll(() => scene.getAttribute('transform')).toContain('scale(1.2)');
+  await page.getByLabel('下一步').click();
+  await expect.poll(() => scene.getAttribute('transform')).toContain('scale(1.2)');
+});
+
+test('E2E-010 算法思路弹窗可打开和关闭', async ({ page }) => {
+  await page.goto('/');
+  await page.getByText('算法思路', { exact: true }).click();
+  await expect(page.getByRole('dialog', { name: '为什么移动较短边？' })).toBeVisible();
+  await page.getByLabel('关闭算法思路').click();
+  await expect(page.getByRole('dialog')).toHaveCount(0);
+  await expect(page.locator('.operation-badge')).toBeVisible();
+  await expect(page.locator('.step-narration')).toBeVisible();
+});
+
+test('E2E-011 当前唯一解法可完整播放', async ({ page }) => {
+  await page.goto('/');
+  const progress = page.getByLabel('动画进度');
+  await progress.fill(await progress.getAttribute('max') ?? '0');
+  await expect(page.locator('.operation-badge')).toHaveAttribute('data-operation', 'done');
+  await expect(page.locator('.canvas-metrics')).toContainText('49');
+  await expect(page.locator('.bar-node[data-status="best"]')).toHaveCount(2);
+  await expect(page.locator('.water-area')).toHaveCount(0);
+});
+
+test('E2E-012 操作后无旧节点残留', async ({ page }) => {
+  await page.goto('/');
+  await page.locator('#heights-input').fill('3, 1, 2, 4');
+  await page.getByText('应用', { exact: true }).click();
+  await expect(page.locator('.bar-node')).toHaveCount(4);
+  await expect.poll(() => page.locator('.bar-node[opacity="0"]').count()).toBe(0);
+});
+
+test('E2E-013 播放速度刷新后保留', async ({ page }) => {
+  await page.goto('/');
+  await page.getByLabel('播放速度').selectOption('400');
+  await page.reload();
+  await expect(page.getByLabel('播放速度')).toHaveValue('400');
+});
+
+test('E2E-014 GitHub 链接可用', async ({ page }) => {
+  await page.goto('/');
+  const github = page.locator('.github-badge');
+  await expect(github).toHaveAttribute('target', '_blank');
+  await expect(github.locator('img')).toHaveAttribute('alt', 'GitHub');
+  await expect(github).toHaveAttribute('aria-label', /^GitHub \d+ stars$/);
+});
+
+test('E2E-015 社群浮层二维码与无紫色主题', async ({ page }) => {
+  await page.goto('/');
+  await page.getByRole('button', { name: '交流群' }).hover();
+  const qr = page.getByAltText('算法交流群二维码');
+  await expect(qr).toBeVisible();
+  const qrBox = await qr.boundingBox();
+  expect(qrBox).not.toBeNull();
+  expect(Math.abs(qrBox!.width / qrBox!.height - 1)).toBeLessThan(0.02);
+  const css = await page.evaluate(() => [...document.styleSheets].map((sheet) => {
+    try { return [...sheet.cssRules].map((rule) => rule.cssText).join(' '); } catch { return ''; }
+  }).join(' '));
+  expect(css.toLowerCase()).not.toContain('purple');
+  const colors = css.match(/#[0-9a-f]{3,8}\b/gi) ?? [];
+  expect(colors.some((color) => {
+    const hex = color.slice(1);
+    const full = hex.length === 3 ? [...hex].map((digit) => digit + digit).join('') : hex.slice(0, 6);
+    const red = parseInt(full.slice(0, 2), 16);
+    const green = parseInt(full.slice(2, 4), 16);
+    const blue = parseInt(full.slice(4, 6), 16);
+    return blue > red * 1.2 && blue > green * 1.1 && red > green * 0.8;
+  })).toBe(false);
+});

@@ -10,7 +10,7 @@ export function useAlgorithmAnimation() {
     algorithmType: 'twoPointer',
     frameSnapshots: [],
     heightArray: getDefaultHeights(),
-    animationSpeed: 800
+    animationSpeed: Number(localStorage.getItem('animationSpeed')) || 800
   });
   
   const timerRef = useRef<number | null>(null);
@@ -26,6 +26,19 @@ export function useAlgorithmAnimation() {
     }));
   }, [state.heightArray, state.algorithmType]);
   
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      const target = event.target as HTMLElement;
+      if (target.isContentEditable || ['INPUT', 'TEXTAREA', 'SELECT', 'BUTTON'].includes(target.tagName)) return;
+      if (event.code === 'Space') { event.preventDefault(); togglePlay(); }
+      else if (event.key === 'ArrowRight') nextStep();
+      else if (event.key === 'ArrowLeft') prevStep();
+      else if (event.key.toLowerCase() === 'r') reset();
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  });
+
   // 动画播放控制
   useEffect(() => {
     if (state.isPlaying) {
@@ -103,8 +116,18 @@ export function useAlgorithmAnimation() {
     return state.frameSnapshots[state.currentFrame];
   };
   
+  // 跳转到指定快照
+  const seek = (frame: number) => {
+    setState(prev => ({
+      ...prev,
+      currentFrame: Math.max(0, Math.min(frame, prev.totalFrames - 1)),
+      isPlaying: false
+    }));
+  };
+
   // 更改播放速度
   const setSpeed = (speed: number) => {
+    localStorage.setItem('animationSpeed', String(speed));
     setState(prev => ({
       ...prev,
       animationSpeed: speed
@@ -128,6 +151,7 @@ export function useAlgorithmAnimation() {
     nextStep,
     prevStep,
     getCurrentFrameData,
+    seek,
     setSpeed,
     setHeightArray
   };

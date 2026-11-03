@@ -12,6 +12,15 @@ export interface FrameSnapshot {
   isKeyFrame: boolean;
   // 当前操作说明
   description: string;
+  operation: 'init' | 'compare' | 'update' | 'move' | 'done';
+  operationLabel: string;
+  narration: string;
+  candidateLeftPointer?: number;
+  candidateRightPointer?: number;
+  bestLeftPointer?: number;
+  bestRightPointer?: number;
+  codeAnchor: 'init' | 'compare-area' | 'update' | 'move-left' | 'move-right' | 'return';
+  variables: Record<string, string | number>;
 }
 
 // 算法状态类型
