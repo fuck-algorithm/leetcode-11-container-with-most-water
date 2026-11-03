@@ -56,6 +56,15 @@ describe('双指针动画快照', () => {
     expect([update.bestLeftPointer, update.bestRightPointer]).toEqual([0, 1]);
   });
 
+  it('暴力枚举初始化帧从第一组有效边界开始且变量与指针一致', () => {
+    const frame = generateBruteForceFrames([4, 2, 7]).find((item) => item.operation === 'init');
+    expect(frame).toMatchObject({
+      leftPointer: 0, rightPointer: 1, candidateLeftPointer: 0, candidateRightPointer: 1,
+      variables: { i: 0, j: 1 },
+    });
+    expect(frame.narration).toContain('(0, 1)');
+  });
+
   it('暴力枚举逐一生成所有唯一边界组合的计算帧', () => {
     const heights = [3, 1, 4, 2, 5];
     const compares = generateBruteForceFrames(heights).filter((frame) => frame.operation === 'compare');

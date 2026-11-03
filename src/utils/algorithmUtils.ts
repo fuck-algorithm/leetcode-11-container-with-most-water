@@ -156,12 +156,14 @@ export function generateBruteForceFrames(heights: number[]): FrameSnapshot[] {
   let bestRightPointer = Math.max(0, heights.length - 1);
   const append = (frame: FrameSnapshot) => frames.push(frame);
 
+  const firstRight = heights.length > 1 ? 1 : 0;
   append({
-    leftPointer: 0, rightPointer: Math.max(0, heights.length - 1), maxArea: 0, currentArea: 0,
-    isKeyFrame: true, description: '初始化枚举状态，从最左侧的容器组合开始检查。',
+    leftPointer: 0, rightPointer: firstRight, maxArea: 0, currentArea: 0, isKeyFrame: true,
+    description: `初始化枚举状态，从边界 (0, ${firstRight}) 开始检查。`,
     operation: 'init', operationLabel: '初始化枚举',
-    narration: '暴力法保留每一种左右边界组合，因为只有逐对检查才能保证没有候选容器遗漏。',
-    codeAnchor: 'brute-init', variables: { i: 0, j: 1, res: 0, checked: 0 },
+    narration: '暴力法从最左侧的第一组边界 (0, 1) 开始，按顺序检查每一种左右组合；每一组单独计算，不跳过候选。',
+    candidateLeftPointer: 0, candidateRightPointer: firstRight,
+    codeAnchor: 'brute-init', variables: { i: 0, j: firstRight, res: 0, checked: 0 },
   });
 
   let checked = 0;
