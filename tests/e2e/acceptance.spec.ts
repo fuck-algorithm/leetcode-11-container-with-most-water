@@ -88,7 +88,15 @@ test('E2E-004 矮屏提示条保持在画布内', async ({ page }) => {
   }
 });
 
-test('E2E-005 宽屏矮视口保留有效柱图高度', async ({ page }) => {
+test('E2E-005 窄屏图表不在柱体上叠放最大值文本', async ({ page }) => {
+  for (const viewport of [{ width: 390, height: 844 }, { width: 390, height: 640 }, { width: 1024, height: 600 }]) {
+    await page.setViewportSize(viewport);
+    await page.goto('/');
+    await expect(page.locator('.best-label')).toBeHidden();
+  }
+});
+
+test('E2E-006 宽屏矮视口保留有效柱图高度', async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 640 });
   await page.goto('/');
   await expect(page.locator('.canvas-stage')).toHaveClass(/short-stage/);

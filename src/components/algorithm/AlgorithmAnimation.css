@@ -136,6 +136,7 @@
 @media (max-height: 700px) {
   .canvas-stage .step-explanation,
   .canvas-stage .area-label,
+  .canvas-stage .best-label,
   .canvas-stage .canvas-legend,
   .canvas-stage .canvas-tools { display: none; }
   .canvas-stage .intuition-strip { position: relative; top: auto; margin: 4px 8px 0; }
@@ -150,6 +151,7 @@
 .step-explanation span { overflow-wrap: anywhere; }
 @media (max-width: 760px) { .step-explanation { top: 112px; width: min(210px, 44%); } }
 .canvas-stage.compact-stage .bars-svg { position: absolute; inset: 0; }
+.canvas-stage.compact-stage .best-label { display: none; }
 .canvas-stage.compact-stage.has-explanation.brute-stage .step-explanation { display: none; }
 .canvas-stage.short-stage .step-explanation,
 .canvas-stage.short-stage .area-label,
