@@ -127,7 +127,21 @@ test('E2E-006 矮屏指针标签完整显示在画布内', async ({ page }) => {
   }
 });
 
-test('E2E-007 宽屏矮视口保留有效柱图高度', async ({ page }) => {
+test('E2E-007 手机矮屏到常规屏高度切换不裁图', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 699 });
+  await page.goto('/');
+  const stage = page.locator('.canvas-stage');
+  await expect(stage).toHaveClass(/short-stage/);
+  await expect.poll(() => page.locator('.bars-svg').evaluate((svg) => svg.getBoundingClientRect().height)).toBeGreaterThan(0);
+  await page.setViewportSize({ width: 390, height: 701 });
+  await expect(stage).not.toHaveClass(/short-stage/);
+  await expect.poll(() => page.locator('.bars-svg').evaluate((svg) => {
+    const rect = svg.getBoundingClientRect();
+    return rect.height > 0 && rect.y >= svg.closest('.canvas-stage')!.getBoundingClientRect().y;
+  })).toBe(true);
+});
+
+test('E2E-009 宽屏矮视口保留有效柱图高度', async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 640 });
   await page.goto('/');
   await expect(page.locator('.canvas-stage')).toHaveClass(/short-stage/);
