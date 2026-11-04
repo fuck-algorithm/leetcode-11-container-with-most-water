@@ -96,7 +96,22 @@ test('E2E-005 窄屏图表不在柱体上叠放最大值文本', async ({ page }
   }
 });
 
-test('E2E-006 宽屏矮视口保留有效柱图高度', async ({ page }) => {
+test('E2E-006 矮屏指针标签完整显示在画布内', async ({ page }) => {
+  for (const viewport of [{ width: 360, height: 568 }, { width: 390, height: 640 }, { width: 1024, height: 600 }]) {
+    await page.setViewportSize(viewport);
+    await page.goto('/');
+    const contained = await page.evaluate(() => {
+      const stage = document.querySelector('.canvas-stage')!.getBoundingClientRect();
+      return [...document.querySelectorAll('.pointer text')].every((label) => {
+        const box = label.getBoundingClientRect();
+        return box.top >= stage.top && box.bottom <= stage.bottom;
+      });
+    });
+    expect(contained).toBe(true);
+  }
+});
+
+test('E2E-007 宽屏矮视口保留有效柱图高度', async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 640 });
   await page.goto('/');
   await expect(page.locator('.canvas-stage')).toHaveClass(/short-stage/);

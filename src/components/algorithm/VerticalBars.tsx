@@ -183,8 +183,8 @@ const VerticalBars: React.FC<VerticalBarsProps> = ({ heights, leftPointer, right
       (update) => update,
     );
     pointers.transition('move').duration(duration).ease(d3.easeCubicOut)
-      .attr('transform', (item) => `translate(${startX + item.index * slot + barWidth / 2}, ${plotBottom + 25})`).attr('opacity', 1);
-    pointers.select('text').attr('y', 22).text((item) => item.index === leftPointer && item.index === rightPointer ? 'L/R 相遇' : item.label);
+      .attr('transform', (item) => `translate(${startX + item.index * slot + barWidth / 2}, ${compact ? plotBottom + 8 : plotBottom + 25})`).attr('opacity', 1);
+    pointers.select('text').attr('y', compact ? 15 : 22).text((item) => item.index === leftPointer && item.index === rightPointer ? 'L/R 相遇' : item.label);
     pointers.attr('data-status', (item) => item.index === leftPointer && item.index === rightPointer ? 'current' : item.id === 'pointer-left' ? 'current' : 'compare');
 
     const candidate = showCandidate && visualRight > visualLeft;
