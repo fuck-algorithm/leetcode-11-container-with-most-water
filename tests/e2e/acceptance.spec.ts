@@ -55,7 +55,23 @@ test('E2E-002 手机宽度下步骤提示不覆盖柱图', async ({ page }) => {
   expect(boxes.every(Boolean)).toBe(true);
 });
 
-test('E2E-003 调整视口时短屏画布模式同步切换', async ({ page }) => {
+test('E2E-003 紧凑手机画布提示条不压住高柱', async ({ page }) => {
+  for (const viewport of [{ width: 390, height: 844 }, { width: 760, height: 701 }]) {
+    await page.setViewportSize(viewport);
+    await page.goto('/');
+    await page.locator('#heights-input').fill('15,1,15,1,15');
+    await page.getByText('应用', { exact: true }).click();
+    await expect.poll(() => page.locator('.bar-shape').count()).toBe(5);
+    const collision = await page.evaluate(() => {
+      const hint = document.querySelector('.intuition-strip')!.getBoundingClientRect();
+      const bars = [...document.querySelectorAll('.bar-shape')].map((bar) => bar.getBoundingClientRect());
+      return bars.some((bar) => !(hint.right <= bar.left || hint.left >= bar.right || hint.bottom <= bar.top || hint.top >= bar.bottom));
+    });
+    expect(collision).toBe(false);
+  }
+});
+
+test('E2E-004 调整视口时短屏画布模式同步切换', async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto('/');
   const stage = page.locator('.canvas-stage');

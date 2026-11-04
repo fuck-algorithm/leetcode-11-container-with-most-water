@@ -150,7 +150,8 @@
 .step-explanation b { color: #126b56; }
 .step-explanation span { overflow-wrap: anywhere; }
 @media (max-width: 760px) { .step-explanation { top: 112px; width: min(210px, 44%); } }
-.canvas-stage.compact-stage .bars-svg { position: absolute; inset: 0; }
+.canvas-stage.compact-stage .bars-svg { position: absolute; inset: 38px 0 0; height: calc(100% - 38px); }
+.canvas-stage.compact-stage .intuition-strip { position: relative; top: auto; left: auto; right: auto; width: auto; margin: 4px 8px 0; }
 .canvas-stage.compact-stage .best-label { display: none; }
 .canvas-stage.compact-stage.has-explanation.brute-stage .step-explanation { display: none; }
 .canvas-stage.short-stage .step-explanation,
