@@ -159,7 +159,7 @@ test('E2E-010 桌面与手机面积演算公式位于顶部轨道', async ({ pag
   }
 });
 
-test('E2E-011 极矮手机画布按物理视口缩放且保留公式', async ({ page }) => {
+test('E2E-011 极矮手机画布按比例显示柱水和公式', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 568 });
   await page.goto('/');
   await page.getByLabel('下一步').click();
