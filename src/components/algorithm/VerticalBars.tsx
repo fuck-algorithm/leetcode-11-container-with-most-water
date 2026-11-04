@@ -21,8 +21,6 @@ interface VerticalBarsProps {
   showCandidate: boolean;
 }
 
-const palette = { idle: '#dce7e4', compare: '#e5a93d', visited: '#a9c9bf', best: '#27845e' };
-
 const VerticalBars: React.FC<VerticalBarsProps> = ({ heights, leftPointer, rightPointer, candidateLeftPointer, candidateRightPointer, bestLeftPointer, bestRightPointer, currentArea, limitingHeight, currentWidth, eliminatedRange, maxArea, dwellMs, isDone, showCandidate }) => {
   const svgRef = useRef<SVGSVGElement | null>(null);
   const zoomBehaviorRef = useRef<d3.ZoomBehavior<SVGSVGElement, unknown> | null>(null);
@@ -47,21 +45,29 @@ const VerticalBars: React.FC<VerticalBarsProps> = ({ heights, leftPointer, right
     const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const duration = motionDuration(MOTION.move, dwellMs, reducedMotion);
     const width = Math.max(320, size.width);
-    const height = Math.max(220, size.height);
-    const compact = size.height < 360;
-    const narrow = size.width <= 760;
+    const tinyViewport = element.closest('.canvas-stage')?.classList.contains('tiny-canvas') ?? false;
+    const height = Math.max(1, size.height);
+    const compact = size.width <= 760 || size.height < 360;
+    const shortPlot = compact && size.height < 200 && !tinyViewport;
+    const tinyShortPlot = tinyViewport && size.height < 100;
+    const hidePointers = tinyShortPlot || (size.width <= 760 && size.height < 660);
+    const viewBoxHeight = tinyViewport ? 220 : Math.max(220, size.height);
     const previousSize = viewBoxSizeRef.current;
-    const margin = { top: compact ? 24 : narrow ? 178 : 165, right: 36, bottom: compact ? 45 : 70, left: 36 };
+    const headerBand = tinyViewport ? (tinyShortPlot ? 36 : 66) : compact ? (shortPlot ? 8 : 78) : 130;
+    const footerBand = tinyViewport ? (tinyShortPlot ? 14 : 26) : compact ? 32 : 70;
+    const effectiveHeight = tinyViewport ? viewBoxHeight : height;
+    const margin = { top: headerBand, right: 36, bottom: footerBand, left: 36 };
     const plotWidth = Math.max(1, width - margin.left - margin.right);
-    const plotHeight = Math.max(1, height - margin.top - margin.bottom);
+    const plotHeight = Math.max(1, effectiveHeight - margin.top - margin.bottom);
     const maxHeight = Math.max(1, ...heights);
+    const drawChartLabels = !compact;
     const retired = eliminatedRange ?? [0, -1];
     const gap = Math.min(20, plotWidth / heights.length * 0.2);
     const barWidth = Math.max(8, (plotWidth - gap * (heights.length - 1)) / heights.length);
     const slot = barWidth + gap;
     const startX = margin.left + (plotWidth - (barWidth * heights.length + gap * (heights.length - 1))) / 2;
     const plotBottom = margin.top + plotHeight;
-    const y = d3.scaleLinear().domain([0, maxHeight]).range([plotBottom, margin.top + 4]);
+    const y = d3.scaleLinear().domain([0, maxHeight]).range([plotBottom, margin.top + Math.min(4, plotHeight * 0.1)]);
     const visualLeft = candidateLeftPointer ?? leftPointer;
     const visualRight = candidateRightPointer ?? rightPointer;
     const leftX = startX + visualLeft * slot + barWidth / 2;
@@ -71,7 +77,7 @@ const VerticalBars: React.FC<VerticalBarsProps> = ({ heights, leftPointer, right
     const currentHeight = Math.min(heights[visualLeft] ?? 0, heights[visualRight] ?? 0);
     const waterTop = y(limitingHeight ?? currentHeight);
 
-    svg.attr('viewBox', `0 0 ${width} ${height}`).attr('preserveAspectRatio', 'none');
+    svg.attr('viewBox', `0 0 ${width} ${viewBoxHeight}`).attr('preserveAspectRatio', 'none');
     const scene = svg.selectAll<SVGGElement, number>('g.scene').data([0]).join('g').attr('class', 'scene');
     scene.attr('data-viewbox-width', width).attr('data-viewbox-height', height);
     scene.selectAll<SVGGElement, number>('.layer-containers').data([0]).join('g').attr('class', 'layer-containers');
@@ -107,13 +113,40 @@ const VerticalBars: React.FC<VerticalBarsProps> = ({ heights, leftPointer, right
       .attr('id', 'pointer-arrow').attr('viewBox', '0 0 10 10').attr('refX', 8).attr('refY', 5)
       .attr('markerWidth', 7).attr('markerHeight', 7).attr('orient', 'auto-start-reverse')
       .selectAll('path').data([0]).join('path').attr('d', 'M 0 0 L 10 5 L 0 10 z').attr('fill', '#31554d');
-
+    const waterGradient = defs.selectAll<SVGLinearGradientElement, number>('linearGradient#water-depth').data([0]).join('linearGradient')
+      .attr('id', 'water-depth').attr('x1', '0').attr('x2', '0').attr('y1', '0').attr('y2', '1');
+    waterGradient.selectAll('stop').data([
+      { offset: '0%', color: '#45b9b0', opacity: 0.68 },
+      { offset: '48%', color: '#4daab7', opacity: 0.48 },
+      { offset: '100%', color: '#356985', opacity: 0.32 },
+    ]).join('stop')
+      .attr('offset', (stop) => stop.offset)
+      .attr('stop-color', (stop) => stop.color)
+      .attr('stop-opacity', (stop) => stop.opacity);
+    const barGradients = [
+      { id: 'bar-idle', edge: '#8faea5', body: '#dce9e4', highlight: '#f4f8f6' },
+      { id: 'bar-current', edge: '#0d725d', body: '#16856b', highlight: '#46b293' },
+      { id: 'bar-compare', edge: '#a96a12', body: '#e5a93d', highlight: '#f6cf71' },
+      { id: 'bar-best', edge: '#175e40', body: '#27845e', highlight: '#59ab7b' },
+      { id: 'bar-visited', edge: '#779c90', body: '#a9c9bf', highlight: '#d7e7e1' },
+    ];
+    barGradients.forEach(({ id, edge, body, highlight }) => {
+      const gradient = defs.selectAll<SVGLinearGradientElement, string>(`linearGradient#${id}`).data([id]).join('linearGradient')
+        .attr('id', id).attr('x1', '0').attr('x2', '1').attr('y1', '0').attr('y2', '0');
+      gradient.selectAll('stop').data([
+        { offset: '0%', color: edge },
+        { offset: '18%', color: body },
+        { offset: '50%', color: highlight },
+        { offset: '82%', color: body },
+        { offset: '100%', color: edge },
+      ]).join('stop').attr('offset', (stop) => stop.offset).attr('stop-color', (stop) => stop.color);
+    });
     const ticks = d3.ticks(0, maxHeight, 4);
-    const grid = scene.selectAll<SVGGElement, number>('g.grid-layer').data([0]).join('g').attr('class', 'grid-layer');
-    grid.selectAll<SVGLineElement, number>('line.grid-line').data(ticks).join('line')
+    const grid = scene.selectAll<SVGGElement, number>('g.grid-layer').data([0]).join('g').attr('class', 'grid-layer').attr('display', tinyViewport ? 'none' : null);
+    grid.selectAll<SVGLineElement, number>('line.grid-line').data(drawChartLabels ? ticks : []).join('line')
       .attr('class', 'grid-line').attr('x1', margin.left).attr('x2', width - margin.right)
       .transition('grid').duration(duration).attr('y1', (value) => y(value)).attr('y2', (value) => y(value));
-    grid.selectAll<SVGTextElement, number>('text.grid-label').data(ticks).join('text')
+    grid.selectAll<SVGTextElement, number>('text.grid-label').data(drawChartLabels ? ticks : []).join('text')
       .attr('class', 'grid-label').attr('x', margin.left - 10).attr('text-anchor', 'end')
       .attr('dominant-baseline', 'middle').text((value) => String(value))
       .transition('grid').duration(duration).attr('y', (value) => y(value));
@@ -135,7 +168,16 @@ const VerticalBars: React.FC<VerticalBarsProps> = ({ heights, leftPointer, right
       (update) => update,
       (exit) => fadeOutAndRemove(exit),
     ).interrupt('exit').transition('water').duration(duration).attr('x', waterLeft).attr('y', waterTop)
-      .attr('width', Math.max(0, waterRight - waterLeft)).attr('height', Math.max(0, plotBottom - waterTop)).attr('opacity', 1);
+      .attr('width', Math.max(0, waterRight - waterLeft)).attr('height', Math.max(0, plotBottom - waterTop))
+      .attr('fill', 'url(#water-depth)').attr('stroke', 'none').attr('opacity', 1);
+    const waterSurface = scene.selectAll<SVGLineElement, boolean>('line.water-surface').data(showWater ? [true] : []);
+    waterSurface.join('line').attr('class', 'water-surface').attr('display', tinyViewport ? 'none' : null).attr('opacity', 0)
+      .transition('surface').duration(duration)
+      .attr('x1', waterLeft).attr('x2', waterRight).attr('y1', waterTop).attr('y2', waterTop).attr('opacity', 1);
+    scene.selectAll<SVGLineElement, boolean>('line.water-ripple').data(showWater ? [true] : []).join('line')
+      .attr('class', 'water-ripple').attr('display', tinyViewport ? 'none' : null).attr('x1', waterLeft + 7).attr('x2', Math.max(waterLeft + 7, waterRight - 7))
+      .transition('ripple').duration(duration * 0.8)
+      .attr('y1', Math.min(plotBottom - 2, waterTop + 6)).attr('y2', Math.min(plotBottom - 2, waterTop + 6));
 
     const data = heights.map((value, index) => {
       const isLeft = index === leftPointer;
@@ -148,7 +190,7 @@ const VerticalBars: React.FC<VerticalBarsProps> = ({ heights, leftPointer, right
     const bars = nodeLayer.selectAll<SVGGElement, (typeof data)[number]>('g.bar-node').data(data, (item) => item.id).join(
       (enter) => {
         const node = enter.append('g').attr('class', 'bar-node').attr('data-node-id', (item) => item.id).attr('opacity', 0);
-        node.append('rect').attr('class', 'bar-shape').attr('rx', 7);
+        node.append('rect').attr('class', 'bar-shape').attr('rx', tinyViewport ? 3 : 7);
         node.append('text').attr('class', 'bar-value').attr('text-anchor', 'middle').attr('dominant-baseline', 'central');
         node.append('text').attr('class', 'bar-index').attr('text-anchor', 'middle');
         return node;
@@ -161,15 +203,16 @@ const VerticalBars: React.FC<VerticalBarsProps> = ({ heights, leftPointer, right
       .attr('transform', (item) => `translate(${startX + item.index * slot}, 0)`).attr('opacity', 1);
     bars.select<SVGRectElement>('rect.bar-shape').transition('shape').duration(duration)
       .attr('y', (item) => y(item.value)).attr('width', barWidth).attr('height', (item) => Math.max(0, plotBottom - y(item.value)))
-      .attr('fill', (item) => item.status === 'compare' ? palette.compare : item.status === 'current' ? '#16856b' : item.status === 'visited' ? palette.visited : item.status === 'best' ? palette.best : palette.idle)
-      .attr('stroke', (item) => item.status === 'compare' ? '#a66e0b' : item.status === 'current' ? '#0f6f58' : item.status === 'best' ? '#155d43' : '#4d7168')
-      .attr('stroke-width', (item) => item.status === 'compare' || item.status === 'current' || item.status === 'best' ? 2.5 : 1);
+      .attr('fill', (item) => `url(#bar-${item.status === 'current' ? 'current' : item.status === 'compare' ? 'compare' : item.status === 'best' ? 'best' : item.status === 'visited' ? 'visited' : 'idle'})`)
+      .attr('stroke', (item) => item.status === 'compare' ? '#a96a12' : item.status === 'current' ? '#0d725d' : item.status === 'best' ? '#175e40' : '#779c90')
+      .attr('stroke-width', (item) => item.status === 'compare' || item.status === 'current' || item.status === 'best' ? 2 : 1.1);
     bars.select<SVGTextElement>('text.bar-value').text((item) => String(item.value))
-      .attr('y', (item) => item.value > maxHeight * 0.2 ? y(item.value) + Math.min(20, (plotBottom - y(item.value)) / 2) : y(item.value) - 13)
+      .attr('y', (item) => item.value > maxHeight * 0.2 ? y(item.value) + Math.min(tinyViewport ? 10 : 20, (plotBottom - y(item.value)) / 2) : y(item.value) - (tinyViewport ? 8 : 13))
+      .attr('font-size', tinyViewport ? 9 : null)
       .attr('fill', (item) => item.status === 'current' || item.status === 'best' ? '#fff' : '#24443b');
-    bars.select<SVGTextElement>('text.bar-index').attr('y', plotBottom + 19).text((item) => String(item.index));
+    bars.select<SVGTextElement>('text.bar-index').attr('y', plotBottom + (tinyViewport ? 8 : 19)).attr('font-size', tinyViewport ? 8 : null).text((item) => String(item.index));
 
-    const pointerData = [
+    const pointerData = hidePointers ? [] : [
       { id: 'pointer-left', label: 'L  左端', index: leftPointer },
       { id: 'pointer-right', label: 'R  右端', index: rightPointer },
     ];
@@ -183,8 +226,8 @@ const VerticalBars: React.FC<VerticalBarsProps> = ({ heights, leftPointer, right
       (update) => update,
     );
     pointers.transition('move').duration(duration).ease(d3.easeCubicOut)
-      .attr('transform', (item) => `translate(${startX + item.index * slot + barWidth / 2}, ${compact ? plotBottom + 8 : plotBottom + 25})`).attr('opacity', 1);
-    pointers.select('text').attr('y', compact ? 15 : 22).text((item) => item.index === leftPointer && item.index === rightPointer ? 'L/R 相遇' : item.label);
+      .attr('transform', (item) => `translate(${startX + item.index * slot + barWidth / 2}, ${tinyViewport ? plotBottom + 2 : compact ? plotBottom + 8 : plotBottom + 25})`).attr('opacity', 1);
+    pointers.select('text').attr('y', tinyViewport ? 5 : compact ? 15 : 22).text((item) => item.index === leftPointer && item.index === rightPointer ? 'L/R 相遇' : item.label);
     pointers.attr('data-status', (item) => item.index === leftPointer && item.index === rightPointer ? 'current' : item.id === 'pointer-left' ? 'current' : 'compare');
 
     const candidate = showCandidate && visualRight > visualLeft;

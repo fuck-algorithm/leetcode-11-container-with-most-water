@@ -104,11 +104,12 @@ test('E2E-004 矮屏提示条保持在画布内', async ({ page }) => {
   }
 });
 
-test('E2E-005 窄屏图表不在柱体上叠放最大值文本', async ({ page }) => {
+test('E2E-005 窄屏图表的答案统一显示在底部数据指标', async ({ page }) => {
   for (const viewport of [{ width: 390, height: 844 }, { width: 390, height: 640 }, { width: 1024, height: 600 }]) {
     await page.setViewportSize(viewport);
     await page.goto('/');
     await expect(page.locator('.best-label')).toBeHidden();
+    await expect(page.locator('.canvas-metrics')).toContainText('最大面积');
   }
 });
 
@@ -141,7 +142,50 @@ test('E2E-007 手机矮屏到常规屏高度切换不裁图', async ({ page }) =
   })).toBe(true);
 });
 
-test('E2E-009 宽屏矮视口保留有效柱图高度', async ({ page }) => {
+test('E2E-010 桌面与手机面积演算公式位于顶部轨道', async ({ page }) => {
+  for (const viewport of [{ width: 1440, height: 900 }, { width: 390, height: 844 }]) {
+    await page.setViewportSize(viewport);
+    await page.goto('/');
+    await page.getByLabel('下一步').click();
+    await expect(page.locator('.formula-ribbon')).toContainText('水位 1');
+    const boxes = await page.evaluate(() => {
+      const formula = document.querySelector('.formula-ribbon')!.getBoundingClientRect();
+      const stage = document.querySelector('.canvas-stage')!.getBoundingClientRect();
+      const bars = [...document.querySelectorAll('.bar-shape')].map((bar) => bar.getBoundingClientRect());
+      return { formulaAbovePlot: formula.bottom <= Math.min(...bars.map((bar) => bar.top)), formulaInsideStage: formula.left >= stage.left && formula.right <= stage.right };
+    });
+    expect(boxes.formulaAbovePlot).toBe(true);
+    expect(boxes.formulaInsideStage).toBe(true);
+  }
+});
+
+test('E2E-011 极矮手机画布按物理视口缩放且保留公式', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 568 });
+  await page.goto('/');
+  await page.getByLabel('下一步').click();
+  const geometry = await page.evaluate(() => {
+    const svg = document.querySelector('.bars-svg')!;
+    const stage = document.querySelector('.canvas-stage')!.getBoundingClientRect();
+    const bars = [...document.querySelectorAll<SVGRectElement>('.bar-shape')];
+    const visibleBars = bars.map((bar) => bar.getBoundingClientRect());
+    return {
+      viewBoxHeight: svg.viewBox.baseVal.height,
+      svgHeight: svg.getBoundingClientRect().height,
+      stageHeight: stage.height,
+      barHeight: Math.max(...bars.map((bar) => bar.getBoundingClientRect().height)),
+      barsInsideStage: visibleBars.every((bar) => bar.top >= stage.top && bar.bottom <= stage.bottom),
+      formulaVisible: getComputedStyle(document.querySelector('.formula-ribbon')!).display !== 'none',
+    };
+  });
+  expect(geometry.stageHeight).toBeLessThan(120);
+  expect(geometry.svgHeight).toBeLessThan(100);
+  expect(geometry.viewBoxHeight).toBeGreaterThan(geometry.svgHeight);
+  expect(geometry.barHeight).toBeGreaterThan(30);
+  expect(geometry.barsInsideStage).toBe(true);
+  expect(geometry.formulaVisible).toBe(true);
+});
+
+test('E2E-011 宽屏矮视口保留有效柱图高度', async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 640 });
   await page.goto('/');
   await expect(page.locator('.canvas-stage')).toHaveClass(/short-stage/);
@@ -212,8 +256,9 @@ test('E2E-006 操作、解说和画布随步骤同步', async ({ page }) => {
     const right = Number(rightBar.getAttribute('transform')!.split('(')[1].split(',')[0]);
     return Math.abs(Number(water.getAttribute('x')) - left) < 0.1 && Math.abs(Number(water.getAttribute('x')) + Number(water.getAttribute('width')) - right) < 0.1;
   })).toBe(true);
-  await expect(page.locator('.intuition-strip')).toContainText('面积 =');
-  await expect(page.locator('.area-label')).toContainText('面积 1 × 8 = 8');
+  await expect(page.locator('.formula-ribbon')).toContainText('水位 1');
+  await expect(page.locator('.formula-ribbon')).toContainText('宽度 8');
+  await expect(page.locator('.formula-ribbon')).toContainText('8');
   await expect(page.locator('.intuition-strip')).toContainText('水位');
   await expect(page.getByLabel('当前步骤解释')).toContainText('索引 0 与 8');
   await expect(page.getByLabel('当前步骤解释')).toContainText('面积 8');
