@@ -152,10 +152,15 @@ test('E2E-010 桌面与手机面积演算公式位于顶部轨道', async ({ pag
       const formula = document.querySelector('.formula-ribbon')!.getBoundingClientRect();
       const stage = document.querySelector('.canvas-stage')!.getBoundingClientRect();
       const bars = [...document.querySelectorAll('.bar-shape')].map((bar) => bar.getBoundingClientRect());
-      return { formulaAbovePlot: formula.bottom <= Math.min(...bars.map((bar) => bar.top)), formulaInsideStage: formula.left >= stage.left && formula.right <= stage.right };
+      return {
+        formulaAbovePlot: formula.bottom <= Math.min(...bars.map((bar) => bar.top)),
+        formulaInsideStage: formula.left >= stage.left && formula.right <= stage.right,
+      };
     });
     expect(boxes.formulaAbovePlot).toBe(true);
     expect(boxes.formulaInsideStage).toBe(true);
+    await expect(page.locator('.water-surface')).toHaveCount(1);
+    await expect(page.locator('.formula-ribbon')).toContainText('宽度 8');
   }
 });
 

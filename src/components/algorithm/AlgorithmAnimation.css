@@ -134,22 +134,24 @@
 .formula-ribbon { justify-self: center; display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border: 1px solid #b7dcd5; border-radius: 999px; color: #205f5b; background: #e8f5f2; font-size: 11px; line-height: 1.2; font-variant-numeric: tabular-nums; white-space: nowrap; }
 .formula-ribbon i { color: #708b87; font-style: normal; }
 .formula-ribbon strong { color: #087e83; font-size: 13px; }
-.canvas-legend.legend-compact { top: 30px; left: 8px; right: 8px; max-width: calc(100% - 16px); gap: 6px; font-size: 8px; }
+.canvas-legend.legend-compact { top: auto; bottom: 38px; left: 8px; right: 8px; max-width: calc(100% - 16px); gap: 6px; font-size: 8px; }
 .canvas-legend.legend-compact span { background: #ffffffd9; border-radius: 4px; padding: 1px 2px; }
 .canvas-legend.legend-compact span { gap: 3px; }
 .canvas-legend.legend-compact .legend-swatch { width: 7px; height: 7px; }
+.canvas-legend.legend-short { display: none; }
 .step-explanation { min-width: 0; display: grid; gap: 5px; padding: 8px 10px; border: 1px solid #dce6e1; border-radius: 7px; color: #49645b; background: #fffffff2; box-shadow: 0 2px 8px #244b3f10; }
 .step-explanation div { display: grid; grid-template-columns: 66px minmax(0,1fr); gap: 5px; font-size: 9px; line-height: 1.35; }
 .step-explanation b { color: #126b56; }
 .step-explanation span { overflow-wrap: anywhere; }
 .canvas-stage.compact-stage .canvas-insight-rail { top: 10px; left: 8px; right: 8px; grid-template-columns: minmax(0,1fr); }
+.canvas-stage.compact-stage:not(.tiny-canvas) .formula-ribbon { align-self: start; justify-self: start; }
 .canvas-stage.compact-stage .step-explanation,
 .canvas-stage.compact-stage .best-label,
 .canvas-stage.compact-stage .canvas-tools,
 .canvas-stage.compact-stage .canvas-legend { display: none; }
 .canvas-stage.compact-stage .bars-svg { position: absolute; inset: 82px 0 0; height: calc(100% - 82px); }
 .canvas-stage.compact-stage .legend-compact { display: flex; top: 68px; }
-.canvas-stage.short-stage.compact-stage:not(.tiny-canvas) .formula-ribbon { position: absolute; top: 10px; right: 8px; z-index: 3; }
+.canvas-stage.short-stage.compact-stage:not(.tiny-canvas) .formula-ribbon { position: static; top: auto; left: auto; right: auto; justify-self: start; align-self: start; }
 .canvas-stage.short-stage:not(.compact-stage):not(.tiny-canvas) .canvas-insight-rail { top: 10px; }
 .canvas-stage.short-stage:not(.tiny-canvas) .formula-ribbon { position: absolute; top: 10px; right: 8px; z-index: 3; }
 .canvas-stage.short-stage .step-explanation,

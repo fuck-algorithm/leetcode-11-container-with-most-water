@@ -131,7 +131,7 @@ const AlgorithmAnimation: React.FC = () => {
               isDone={frame?.operation === 'done'}
               showCandidate={frame?.operation === 'compare' || (frame?.operation === 'move' && state.algorithmType === 'twoPointer')}
             />
-            <div className={`canvas-legend${viewport.width <= 760 ? ' legend-compact' : ''}`} aria-label="画布图例" data-testid="canvas-legend">
+            <div className={`canvas-legend${viewport.width <= 760 ? ' legend-compact' : ''}${viewport.height < 700 ? ' legend-short' : ''}`} aria-label="画布图例" data-testid="canvas-legend">
               <span><i className="legend-swatch left" />当前焦点</span>
               <span><i className="legend-swatch right" />比较对象</span>
               <span><i className="legend-swatch water" />当前容器</span>
