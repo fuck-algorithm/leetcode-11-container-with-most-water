@@ -53,8 +53,8 @@ const VerticalBars: React.FC<VerticalBarsProps> = ({ heights, leftPointer, right
     const hidePointers = tinyViewport || (size.width <= 760 && size.height < 660);
     const viewBoxHeight = tinyViewport && !tinyShortPlot ? 220 : shortPlot ? 220 : Math.max(220, height);
     const previousSize = viewBoxSizeRef.current;
-    const headerBand = tinyViewport ? 20 : compact ? (shortPlot ? 50 : 78) : 130;
-    const footerBand = tinyViewport ? 12 : compact ? 32 : 70;
+    const headerBand = tinyViewport ? (tinyShortPlot ? 16 : 24) : compact ? (shortPlot ? 14 : 78) : 130;
+    const footerBand = tinyViewport ? (tinyShortPlot ? 8 : 14) : compact ? (shortPlot ? 14 : 32) : 70;
     const effectiveHeight = shortPlot ? viewBoxHeight : height;
     const margin = { top: headerBand, right: 36, bottom: footerBand, left: 36 };
     const plotWidth = Math.max(1, width - margin.left - margin.right);
