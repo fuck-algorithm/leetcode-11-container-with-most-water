@@ -149,7 +149,9 @@
 .canvas-stage.compact-stage .canvas-legend { display: none; }
 .canvas-stage.compact-stage .bars-svg { position: absolute; inset: 82px 0 0; height: calc(100% - 82px); }
 .canvas-stage.compact-stage .legend-compact { display: flex; top: 68px; }
-.canvas-stage.short-stage .canvas-insight-rail { top: 10px; left: 8px; right: 8px; grid-template-columns: minmax(0,1fr); }
+.canvas-stage.short-stage.compact-stage:not(.tiny-canvas) .formula-ribbon { position: absolute; top: 10px; right: 8px; z-index: 3; }
+.canvas-stage.short-stage:not(.compact-stage):not(.tiny-canvas) .canvas-insight-rail { top: 10px; }
+.canvas-stage.short-stage:not(.tiny-canvas) .formula-ribbon { position: absolute; top: 10px; right: 8px; z-index: 3; }
 .canvas-stage.short-stage .step-explanation,
 .canvas-stage.short-stage .area-label,
 .canvas-stage.short-stage .best-label,
@@ -160,7 +162,9 @@
 .canvas-stage.tiny-canvas .insight-copy,
 .canvas-stage.tiny-canvas .step-explanation { display: none; }
 .canvas-stage.tiny-canvas .formula-ribbon { justify-self: center; height: 28px; }
-.canvas-stage.tiny-canvas .bars-svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+.canvas-stage.tiny-canvas .bars-svg { position: absolute; inset: 48px 0 0; width: 100%; height: calc(100% - 48px); }
+.canvas-stage.tiny-canvas:not(.short-stage) .canvas-insight-rail { top: 4px; }
+.canvas-stage.tiny-canvas:not(.short-stage) .bars-svg { top: 52px; height: calc(100% - 52px); }
 .canvas-stage.zoomed-stage .canvas-insight-rail,
 .canvas-stage.zoomed-stage .canvas-legend { visibility: hidden; pointer-events: none; }
 

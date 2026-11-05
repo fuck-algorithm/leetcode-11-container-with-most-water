@@ -48,14 +48,14 @@ const VerticalBars: React.FC<VerticalBarsProps> = ({ heights, leftPointer, right
     const tinyViewport = element.closest('.canvas-stage')?.classList.contains('tiny-canvas') ?? false;
     const height = Math.max(1, size.height);
     const compact = size.width <= 760 || size.height < 360;
-    const shortPlot = compact && size.height < 200 && !tinyViewport;
-    const tinyShortPlot = tinyViewport && size.height < 100;
+    const tinyShortPlot = tinyViewport && height < 90;
+    const shortPlot = (compact && height < 200 && !tinyViewport) || tinyShortPlot;
     const hidePointers = tinyViewport || (size.width <= 760 && size.height < 660);
-    const viewBoxHeight = tinyViewport ? 160 : Math.max(220, size.height);
+    const viewBoxHeight = tinyViewport && !tinyShortPlot ? 220 : shortPlot ? 220 : Math.max(220, height);
     const previousSize = viewBoxSizeRef.current;
-    const headerBand = tinyViewport ? (tinyShortPlot ? 18 : 42) : compact ? (shortPlot ? 8 : 78) : 130;
-    const footerBand = tinyViewport ? (tinyShortPlot ? 10 : 18) : compact ? 32 : 70;
-    const effectiveHeight = tinyViewport ? viewBoxHeight : height;
+    const headerBand = tinyViewport ? (tinyShortPlot ? 8 : 0) : compact ? (shortPlot ? 8 : 78) : 130;
+    const footerBand = tinyViewport ? (tinyShortPlot ? 4 : 0) : compact ? 32 : 70;
+    const effectiveHeight = shortPlot ? viewBoxHeight : height;
     const margin = { top: headerBand, right: 36, bottom: footerBand, left: 36 };
     const plotWidth = Math.max(1, width - margin.left - margin.right);
     const plotHeight = Math.max(1, effectiveHeight - margin.top - margin.bottom);
@@ -207,6 +207,7 @@ const VerticalBars: React.FC<VerticalBarsProps> = ({ heights, leftPointer, right
       .attr('stroke', (item) => item.status === 'compare' ? '#a96a12' : item.status === 'current' ? '#0d725d' : item.status === 'best' ? '#175e40' : '#779c90')
       .attr('stroke-width', (item) => item.status === 'compare' || item.status === 'current' || item.status === 'best' ? 2 : 1.1);
     bars.select<SVGTextElement>('text.bar-value').text((item) => String(item.value))
+      .attr('display', tinyViewport ? 'none' : null)
       .attr('y', (item) => item.value > maxHeight * 0.2 ? y(item.value) + Math.min(tinyViewport ? 10 : 20, (plotBottom - y(item.value)) / 2) : y(item.value) - (tinyViewport ? 8 : 13))
       .attr('font-size', tinyViewport ? 9 : null)
       .attr('fill', (item) => item.status === 'current' || item.status === 'best' ? '#fff' : '#24443b');
