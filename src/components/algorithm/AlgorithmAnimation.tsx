@@ -140,7 +140,7 @@ const AlgorithmAnimation: React.FC = () => {
             <div className={`canvas-legend${viewport.width <= 760 ? ' legend-compact' : ''}${viewport.height < 700 ? ' legend-short' : ''}`} aria-label="画布图例" data-testid="canvas-legend">
               <span><i className="legend-swatch left" />当前焦点</span>
               <span><i className="legend-swatch right" />比较对象</span>
-              <span><i className="legend-swatch water" />当前容器</span>
+              <span><i className="legend-swatch water" />水体区间（池内索引，不含边界柱）</span>
               <span><i className="legend-swatch best" />当前最优解</span>
             </div>
           </div>
