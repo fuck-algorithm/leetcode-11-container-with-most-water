@@ -27,6 +27,8 @@ const VerticalBars: React.FC<VerticalBarsProps> = ({ heights, leftPointer, right
   const viewBoxSizeRef = useRef({ width: 0, height: 0 });
   const [zoomLevel, setZoomLevel] = useState(1);
   const [size, setSize] = useState({ width: 0, height: 0 });
+  const [hoveredBar, setHoveredBar] = useState<{ index: number; value: number; x: number; y: number } | null>(null);
+  const [showDataTable, setShowDataTable] = useState(false);
 
   useEffect(() => {
     const svg = svgRef.current;
@@ -62,10 +64,12 @@ const VerticalBars: React.FC<VerticalBarsProps> = ({ heights, leftPointer, right
     const maxHeight = Math.max(1, ...heights);
     const drawChartLabels = !compact;
     const retired = eliminatedRange ?? [0, -1];
-    const gap = Math.min(20, plotWidth / heights.length * 0.2);
-    const barWidth = Math.max(8, (plotWidth - gap * (heights.length - 1)) / heights.length);
-    const slot = barWidth + gap;
-    const startX = margin.left + (plotWidth - (barWidth * heights.length + gap * (heights.length - 1))) / 2;
+    const slot = plotWidth / heights.length;
+    const gap = Math.min(2, slot * 0.16);
+    const barWidth = Math.max(1.5, Math.min(24, slot - gap));
+    const showBarValues = barWidth >= 18;
+    const showBarIndices = barWidth >= 14;
+    const startX = margin.left + (plotWidth - slot * heights.length) / 2;
     const plotBottom = margin.top + plotHeight;
     const y = d3.scaleLinear().domain([0, maxHeight]).range([plotBottom, margin.top + Math.min(4, plotHeight * 0.1)]);
     const visualLeft = candidateLeftPointer ?? leftPointer;
@@ -80,8 +84,8 @@ const VerticalBars: React.FC<VerticalBarsProps> = ({ heights, leftPointer, right
     svg.attr('viewBox', `0 0 ${width} ${viewBoxHeight}`).attr('preserveAspectRatio', 'none');
     const scene = svg.selectAll<SVGGElement, number>('g.scene').data([0]).join('g').attr('class', 'scene');
     scene.attr('data-viewbox-width', width).attr('data-viewbox-height', height);
-    scene.selectAll<SVGGElement, number>('.layer-containers').data([0]).join('g').attr('class', 'layer-containers');
-    scene.selectAll<SVGGElement, number>('.layer-nodes').data([0]).join('g').attr('class', 'layer-nodes');
+    const containerLayer = scene.selectAll<SVGGElement, number>('.layer-containers').data([0]).join('g').attr('class', 'layer-containers');
+    const nodeLayer = scene.selectAll<SVGGElement, number>('.layer-nodes').data([0]).join('g').attr('class', 'layer-nodes');
     const fadeOutAndRemove = <GElement extends d3.BaseType, Datum, PElement extends d3.BaseType, PDatum>(selection: d3.Selection<GElement, Datum, PElement, PDatum>) => selection.transition('exit').duration(duration).attr('opacity', 0).on('end.cleanup', function () { d3.select(this).remove(); });
     const zoom = d3.zoom<SVGSVGElement, unknown>().scaleExtent([0.65, 3]).on('zoom', (event) => {
       scene.attr('transform', event.transform.toString());
@@ -107,7 +111,6 @@ const VerticalBars: React.FC<VerticalBarsProps> = ({ heights, leftPointer, right
       constrainedTransform.k > 1.4 || Math.abs(constrainedTransform.x) > width * 0.18 || Math.abs(constrainedTransform.y) > height * 0.18,
     );
 
-    const nodeLayer = scene.select<SVGGElement>('.layer-nodes');
     const defs = scene.selectAll<SVGDefsElement, number>('defs').data([0]).join('defs');
     defs.selectAll('marker#pointer-arrow').data([0]).join('marker')
       .attr('id', 'pointer-arrow').attr('viewBox', '0 0 10 10').attr('refX', 8).attr('refY', 5)
@@ -123,24 +126,9 @@ const VerticalBars: React.FC<VerticalBarsProps> = ({ heights, leftPointer, right
       .attr('offset', (stop) => stop.offset)
       .attr('stop-color', (stop) => stop.color)
       .attr('stop-opacity', (stop) => stop.opacity);
-    const barGradients = [
-      { id: 'bar-idle', edge: '#8faea5', body: '#dce9e4', highlight: '#f4f8f6' },
-      { id: 'bar-current', edge: '#0d725d', body: '#16856b', highlight: '#46b293' },
-      { id: 'bar-compare', edge: '#a96a12', body: '#e5a93d', highlight: '#f6cf71' },
-      { id: 'bar-best', edge: '#175e40', body: '#27845e', highlight: '#59ab7b' },
-      { id: 'bar-visited', edge: '#779c90', body: '#a9c9bf', highlight: '#d7e7e1' },
-    ];
-    barGradients.forEach(({ id, edge, body, highlight }) => {
-      const gradient = defs.selectAll<SVGLinearGradientElement, string>(`linearGradient#${id}`).data([id]).join('linearGradient')
-        .attr('id', id).attr('x1', '0').attr('x2', '1').attr('y1', '0').attr('y2', '0');
-      gradient.selectAll('stop').data([
-        { offset: '0%', color: edge },
-        { offset: '18%', color: body },
-        { offset: '50%', color: highlight },
-        { offset: '82%', color: body },
-        { offset: '100%', color: edge },
-      ]).join('stop').attr('offset', (stop) => stop.offset).attr('stop-color', (stop) => stop.color);
-    });
+    const barColors: Record<string, string> = {
+      idle: '#dce7e2', current: '#26866a', compare: '#d29a34', best: '#155d48', visited: '#b8c9c2',
+    };
     const ticks = d3.ticks(0, maxHeight, 4);
     const grid = scene.selectAll<SVGGElement, number>('g.grid-layer').data([0]).join('g').attr('class', 'grid-layer').attr('display', tinyViewport ? 'none' : null);
     grid.selectAll<SVGLineElement, number>('line.grid-line').data(drawChartLabels ? ticks : []).join('line')
@@ -152,7 +140,7 @@ const VerticalBars: React.FC<VerticalBarsProps> = ({ heights, leftPointer, right
       .transition('grid').duration(duration).attr('y', (value) => y(value));
 
     const showWater = showCandidate && visualRight > visualLeft && (limitingHeight ?? currentHeight) > 0;
-    const retiredOverlay = scene.selectAll<SVGRectElement, [number, number]>('rect.eliminated-range').data(
+    const retiredOverlay = containerLayer.selectAll<SVGRectElement, [number, number]>('rect.eliminated-range').data(
       eliminatedRange && eliminatedRange[1] - eliminatedRange[0] >= 0 ? [eliminatedRange] : [],
     );
     retiredOverlay.join('rect')
@@ -169,16 +157,19 @@ const VerticalBars: React.FC<VerticalBarsProps> = ({ heights, leftPointer, right
       (exit) => fadeOutAndRemove(exit),
     ).interrupt('exit').transition('water').duration(duration).attr('x', waterLeft).attr('y', waterTop)
       .attr('width', Math.max(0, waterRight - waterLeft)).attr('height', Math.max(0, plotBottom - waterTop))
-      .attr('fill', 'url(#water-depth)').attr('stroke', 'none').attr('opacity', 1);
+      .attr('fill', 'url(#water-depth)').attr('stroke', 'none').attr('opacity', 0.58);
     const waterSurface = scene.selectAll<SVGLineElement, boolean>('line.water-surface').data(showWater ? [true] : []);
     waterSurface.join('line').attr('class', 'water-surface').attr('display', tinyViewport ? 'none' : null).attr('opacity', 0)
-      .transition('surface').duration(duration)
-      .attr('x1', waterLeft).attr('x2', waterRight).attr('y1', waterTop).attr('y2', waterTop).attr('opacity', 1);
+      .transition('surface').duration(duration).attr('x1', waterLeft).attr('x2', waterRight).attr('y1', waterTop).attr('y2', waterTop).attr('opacity', 1);
+    waterSurface.attr('stroke-width', Math.max(1.5, Math.min(3, slot * 0.22)));
     scene.selectAll<SVGLineElement, boolean>('line.water-ripple').data(showWater ? [true] : []).join('line')
       .attr('class', 'water-ripple').attr('display', tinyViewport ? 'none' : null).attr('x1', waterLeft + 7).attr('x2', Math.max(waterLeft + 7, waterRight - 7))
-      .transition('ripple').duration(duration * 0.8)
-      .attr('y1', Math.min(plotBottom - 2, waterTop + 6)).attr('y2', Math.min(plotBottom - 2, waterTop + 6));
-
+      .transition('ripple').duration(duration * 0.8).attr('y1', Math.min(plotBottom - 2, waterTop + 6)).attr('y2', Math.min(plotBottom - 2, waterTop + 6));
+    const wallData = showWater ? [{ left: waterLeft, right: waterRight, top: waterTop }] : [];
+    const containerWalls = containerLayer.selectAll<SVGPathElement, (typeof wallData)[number]>('path.container-walls').data(wallData);
+    containerWalls.join('path').attr('class', 'container-walls')
+      .attr('d', (wall) => `M${wall.left},${wall.top} V${plotBottom} M${wall.right},${wall.top} V${plotBottom} M${wall.left},${plotBottom} H${wall.right}`)
+      .attr('fill', 'none').attr('stroke', '#42675b').attr('stroke-width', Math.max(2, Math.min(3, slot * 0.24))).attr('stroke-linecap', 'square');
     const data = heights.map((value, index) => {
       const isLeft = index === leftPointer;
       const isRight = index === rightPointer;
@@ -190,7 +181,7 @@ const VerticalBars: React.FC<VerticalBarsProps> = ({ heights, leftPointer, right
     const bars = nodeLayer.selectAll<SVGGElement, (typeof data)[number]>('g.bar-node').data(data, (item) => item.id).join(
       (enter) => {
         const node = enter.append('g').attr('class', 'bar-node').attr('data-node-id', (item) => item.id).attr('opacity', 0);
-        node.append('rect').attr('class', 'bar-shape').attr('rx', tinyViewport ? 3 : 7);
+        node.append('rect').attr('class', 'bar-shape').attr('rx', 0);
         node.append('text').attr('class', 'bar-value').attr('text-anchor', 'middle').attr('dominant-baseline', 'central');
         node.append('text').attr('class', 'bar-index').attr('text-anchor', 'middle');
         return node;
@@ -199,21 +190,32 @@ const VerticalBars: React.FC<VerticalBarsProps> = ({ heights, leftPointer, right
       (exit) => fadeOutAndRemove(exit),
     );
     bars.interrupt('exit').attr('data-status', (item) => item.status)
+      .attr('tabindex', 0).attr('role', 'img')
+      .attr('aria-label', (item) => `索引 ${item.index}，高度 ${item.value}`)
+      .on('pointerenter focus', function (event, item) {
+        const bounds = element.getBoundingClientRect();
+        setHoveredBar({ index: item.index, value: item.value, x: event.clientX - bounds.left, y: event.clientY - bounds.top });
+      })
+      .on('pointermove', function (event, item) {
+        const bounds = element.getBoundingClientRect();
+        setHoveredBar({ index: item.index, value: item.value, x: event.clientX - bounds.left, y: event.clientY - bounds.top });
+      })
+      .on('pointerleave blur', () => setHoveredBar(null))
       .transition('move').duration(duration).ease(d3.easeCubicOut)
       .attr('transform', (item) => `translate(${startX + item.index * slot}, 0)`).attr('opacity', 1);
     bars.select<SVGRectElement>('rect.bar-shape').transition('shape').duration(duration)
-      .attr('y', (item) => y(item.value)).attr('width', barWidth).attr('height', (item) => Math.max(0, plotBottom - y(item.value)))
-      .attr('fill', (item) => `url(#bar-${item.status === 'current' ? 'current' : item.status === 'compare' ? 'compare' : item.status === 'best' ? 'best' : item.status === 'visited' ? 'visited' : 'idle'})`)
-      .attr('stroke', (item) => item.status === 'compare' ? '#a96a12' : item.status === 'current' ? '#0d725d' : item.status === 'best' ? '#175e40' : '#779c90')
-      .attr('stroke-width', (item) => item.status === 'compare' || item.status === 'current' || item.status === 'best' ? 2 : 1.1);
+      .attr('x', gap / 2).attr('y', (item) => y(item.value)).attr('width', barWidth).attr('height', (item) => Math.max(0, plotBottom - y(item.value)))
+      .attr('fill', (item) => barColors[item.status])
+      .attr('stroke', 'none');
     bars.select<SVGTextElement>('text.bar-value').text((item) => String(item.value))
-      .attr('display', tinyViewport ? 'none' : null)
-      .attr('y', (item) => item.value > maxHeight * 0.2 ? y(item.value) + Math.min(tinyViewport ? 10 : 20, (plotBottom - y(item.value)) / 2) : y(item.value) - (tinyViewport ? 8 : 13))
-      .attr('font-size', tinyViewport ? 9 : null)
-      .attr('fill', (item) => item.status === 'current' || item.status === 'best' ? '#fff' : '#24443b');
-    bars.select<SVGTextElement>('text.bar-index').attr('y', plotBottom + (tinyViewport ? 8 : 19)).attr('font-size', tinyViewport ? 8 : null).text((item) => String(item.index));
+      .attr('display', showBarValues ? null : 'none')
+      .attr('x', gap / 2 + barWidth / 2)
+      .attr('y', (item) => y(item.value) - 8)
+      .attr('fill', '#425b52');
+    bars.select<SVGRectElement>('rect.bar-shape').attr('rx', (item) => Math.min(4, Math.max(0, plotBottom - y(item.value))));
+    bars.select<SVGTextElement>('text.bar-index').attr('display', showBarIndices && !tinyViewport ? null : 'none').attr('x', gap / 2 + barWidth / 2).attr('y', plotBottom + 19).attr('font-size', tinyViewport ? 8 : null).text((item) => String(item.index));
 
-    const pointerData = hidePointers ? [] : [
+    const pointerData = hidePointers || !showBarIndices ? [] : [
       { id: 'pointer-left', label: 'L  左端', index: leftPointer },
       { id: 'pointer-right', label: 'R  右端', index: rightPointer },
     ];
@@ -233,7 +235,7 @@ const VerticalBars: React.FC<VerticalBarsProps> = ({ heights, leftPointer, right
 
     const candidate = showCandidate && visualRight > visualLeft;
     const area = currentArea || currentHeight * (visualRight - visualLeft);
-    const areaLabel = scene.selectAll<SVGTextElement, number>('text.area-label').data(candidate ? [area] : []);
+    const areaLabel = scene.selectAll<SVGTextElement, number>('text.area-label').data(candidate && (currentArea > 0 || currentHeight === 0) ? [area] : []);
     areaLabel.join('text').attr('class', 'area-label')
       .attr('text-anchor', width <= 760 ? 'start' : 'middle')
       .attr('x', width <= 760 ? margin.left + 6 : (leftX + rightX) / 2)
@@ -253,7 +255,10 @@ const VerticalBars: React.FC<VerticalBarsProps> = ({ heights, leftPointer, right
         <button type="button" aria-label="放大画布" onClick={() => { if (svgRef.current && zoomBehaviorRef.current) d3.select(svgRef.current).transition().call(zoomBehaviorRef.current.scaleBy, 1.2); }}>+</button>
         <button type="button" aria-label="缩小画布" onClick={() => { if (svgRef.current && zoomBehaviorRef.current) d3.select(svgRef.current).transition().call(zoomBehaviorRef.current.scaleBy, 1 / 1.2); }}>−</button>
         <button type="button" aria-label="重置画布视图" onClick={() => { if (svgRef.current && zoomBehaviorRef.current) d3.select(svgRef.current).transition().call(zoomBehaviorRef.current.transform, d3.zoomIdentity); }}>居中</button>
+        <button type="button" aria-expanded={showDataTable} aria-controls="height-data-table" onClick={() => setShowDataTable((shown) => !shown)}>数据表</button>
       </div>
+      {hoveredBar && <div className="bar-tooltip" role="status" style={{ left: Math.min(hoveredBar.x + 14, Math.max(8, size.width - 126)), top: Math.max(8, hoveredBar.y - 42) }}><strong>高度 {hoveredBar.value}</strong><span>索引 {hoveredBar.index}</span></div>}
+      {showDataTable && <div className="bar-data-table" id="height-data-table" role="region" aria-label="高度数组数据表"><strong>索引与高度</strong><div className="bar-data-grid">{heights.map((value, index) => <span key={index} aria-label={`索引 ${index}，高度 ${value}`}><small>{index}</small><b>{value}</b></span>)}</div></div>}
     </>
   );
 };

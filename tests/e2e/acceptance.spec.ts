@@ -23,8 +23,9 @@ test('E2E-001 单屏首屏与画布空间预算', async ({ page }) => {
       const svgHeight = document.querySelector('.bars-svg')!.getBoundingClientRect().height;
       return bars.length >= 2 && bars.every((bar) => Number(bar.getAttribute('width')) > 0) && Math.max(...bars.map((bar) => Number(bar.getAttribute('height')))) / svgHeight > 0.3;
     });
-    const plot = await page.locator('.bar-shape').evaluateAll((bars) => bars.map((bar) => Number(bar.getAttribute('height'))));
-    expect(Math.max(...plot) / metrics.svg).toBeGreaterThan(0.3);
+    const marks = await page.locator('.bar-shape').evaluateAll((bars) => bars.map((bar) => ({ width: Number(bar.getAttribute('width')), height: Number(bar.getAttribute('height')) })));
+    expect(Math.max(...marks.map((mark) => mark.width))).toBeLessThanOrEqual(24);
+    expect(Math.max(...marks.map((mark) => mark.height)) / metrics.svg).toBeGreaterThan(0.3);
     await expect(page.locator('.operation-badge')).toBeVisible();
     await expect(page.locator('.step-narration')).toBeVisible();
     await expect(page.locator('[data-testid="canvas-legend"]')).toBeVisible();
@@ -188,6 +189,21 @@ test('E2E-011 极矮手机画布按比例显示柱水和公式', async ({ page }
   expect(geometry.barHeight).toBeGreaterThan(30);
   expect(geometry.barsInsideStage).toBe(true);
   expect(geometry.formulaVisible).toBe(true);
+});
+
+test('E2E-018 柱体悬停提示与可访问数据表可用', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto('/');
+  const bar = page.locator('.bar-node[data-node-id="bar-0"]');
+  await bar.focus();
+  await expect(page.getByRole('status')).toContainText('高度 1');
+  await expect(page.getByRole('status')).toContainText('索引 0');
+
+  await page.getByRole('button', { name: '数据表' }).click();
+  const table = page.getByRole('region', { name: '高度数组数据表' });
+  await expect(table).toBeVisible();
+  await expect(table.getByLabel('索引 0，高度 1')).toBeVisible();
+  await expect(table.getByLabel('索引 8，高度 7')).toBeVisible();
 });
 
 test('E2E-011 宽屏矮视口保留有效柱图高度', async ({ page }) => {

@@ -7,6 +7,7 @@ import CodePanel from './CodePanel';
 import './CodePanel.css';
 import { useAlgorithmAnimation } from '../../hooks/useAlgorithmAnimation';
 import { generateRandomHeights, validateInput } from '../../utils/algorithmUtils';
+import { getSolution, solutionRegistry, validateSolutionDemoInput } from '../../features/solutions/solutionRegistry';
 
 const AlgorithmAnimation: React.FC = () => {
   const {
@@ -46,8 +47,9 @@ const AlgorithmAnimation: React.FC = () => {
       setInputError(`${validation.error ?? '输入不能为空'}，例如：1, 8, 6, 2, 5`);
       return;
     }
-    if (state.algorithmType === 'bruteForce' && heights.length > 9) {
-      setInputError('暴力枚举仅支持最多 9 个高度值，请切换双指针或缩短输入。');
+    const demoValidation = validateSolutionDemoInput(state.algorithmType, heights);
+    if (!demoValidation.valid) {
+      setInputError(`${demoValidation.error}，请切换其他解法或缩短输入。`);
       return;
     }
     setInputError('');
@@ -80,9 +82,13 @@ const AlgorithmAnimation: React.FC = () => {
       </div>
 
       <div className="algorithm-tabs" role="tablist" aria-label="选择算法解法">
-        <button type="button" role="tab" aria-selected={state.algorithmType === 'twoPointer'} onClick={() => setAlgorithmType('twoPointer')}>双指针 O(n)</button>
-        <button type="button" role="tab" aria-selected={state.algorithmType === 'bruteForce'} onClick={() => setAlgorithmType('bruteForce')}>暴力枚举 O(n²)</button>
-        {state.algorithmType === 'bruteForce' && <span className="algorithm-limit">演示数据上限：9 项</span>}
+        {solutionRegistry.map((solution) => {
+          const exceedsLimit = solution.maxDemoLength !== undefined && state.heightArray.length > solution.maxDemoLength;
+          return (
+            <button key={solution.id} type="button" role="tab" aria-selected={state.algorithmType === solution.id} disabled={exceedsLimit} title={exceedsLimit ? `${solution.shortLabel}最多演示 ${solution.maxDemoLength} 项` : undefined} onClick={() => setAlgorithmType(solution.id)}>{solution.label}</button>
+          );
+        })}
+        {getSolution(state.algorithmType).maxDemoLength && <span className="algorithm-limit">演示数据上限：{getSolution(state.algorithmType).maxDemoLength} 项</span>}
       </div>
       <div className="visual-workspace">
         <section className="canvas-card" aria-label={`${state.algorithmType === 'bruteForce' ? '暴力枚举' : '双指针'}算法画布`}>
@@ -129,7 +135,7 @@ const AlgorithmAnimation: React.FC = () => {
               maxArea={frame?.maxArea ?? 0}
               dwellMs={state.animationSpeed}
               isDone={frame?.operation === 'done'}
-              showCandidate={frame?.operation === 'compare' || (frame?.operation === 'move' && state.algorithmType === 'twoPointer')}
+              showCandidate={frame?.operation === 'init' || frame?.operation === 'compare' || (frame?.operation === 'move' && state.algorithmType === 'twoPointer')}
             />
             <div className={`canvas-legend${viewport.width <= 760 ? ' legend-compact' : ''}${viewport.height < 700 ? ' legend-short' : ''}`} aria-label="画布图例" data-testid="canvas-legend">
               <span><i className="legend-swatch left" />当前焦点</span>

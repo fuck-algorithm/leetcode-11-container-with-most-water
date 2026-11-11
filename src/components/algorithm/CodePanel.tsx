@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { getSolution } from '../../features/solutions/solutionRegistry';
 
 type Language = 'Java' | 'Python' | 'Go' | 'JavaScript';
 interface CodePanelProps {
@@ -136,7 +137,7 @@ const CodePanel: React.FC<CodePanelProps> = ({ activeAnchor, variables, algorith
           <div className="watch-row" key={name}><code>{name}</code><b>{value}</b></div>
         ))}
       </div>
-      <div className="complexity"><span>时间 <b>{algorithmType === 'bruteForce' ? 'O(n²)' : 'O(n)'}</b></span><span>空间 <b>O(1)</b></span></div>
+      <div className="complexity"><span>时间 <b>{getSolution(algorithmType).timeComplexity}</b></span><span>空间 <b>{getSolution(algorithmType).spaceComplexity}</b></span></div>
     </aside>
   );
 };

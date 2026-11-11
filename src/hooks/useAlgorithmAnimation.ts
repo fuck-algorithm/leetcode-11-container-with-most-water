@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
 import { AlgorithmState, FrameSnapshot } from '../types/algorithm';
 import { MOTION, motionDuration, playbackFrameDelay } from '../features/animation/motion';
-import { generateBruteForceFrames, generateTwoPointerFrames, getDefaultHeights } from '../utils/algorithmUtils';
+import { getDefaultHeights } from '../utils/algorithmUtils';
+import { createSolutionFrames } from '../features/solutions/solutionRegistry';
 
 export function useAlgorithmAnimation() {
   const [state, setState] = useState<AlgorithmState>({
@@ -18,9 +19,7 @@ export function useAlgorithmAnimation() {
   
   // 初始化帧数据
   useEffect(() => {
-    const frames = state.algorithmType === 'bruteForce'
-      ? generateBruteForceFrames(state.heightArray)
-      : generateTwoPointerFrames(state.heightArray);
+    const frames = createSolutionFrames(state.algorithmType, state.heightArray);
     setState(prev => ({
       ...prev,
       frameSnapshots: frames,

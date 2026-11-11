@@ -189,15 +189,19 @@
 .bars-svg .pointer path { fill: #31554d; }
 .bars-svg .pointer text { fill: #31554d; font-size: 10px; font-weight: 700; }
 .bars-svg .water-area { stroke: none; }
-.bars-svg .water-surface { stroke: #187f91; stroke-width: 3; stroke-linecap: round; }
-.bars-svg .water-ripple { stroke: #a7e1d8; stroke-width: 1.5; stroke-linecap: round; opacity: .9; }
+.bars-svg .water-surface { stroke: #1e8378; stroke-width: 2; stroke-linecap: square; }
+.bars-svg .water-ripple { stroke: #78bdb0; stroke-width: 1; stroke-linecap: round; opacity: .72; }
 .bars-svg .bar-shape { stroke-linejoin: round; }
-.bars-svg .bar-node[data-status='current'] .bar-shape { filter: drop-shadow(0 2px 4px #16856b2b); }
-.bars-svg .bar-node[data-status='compare'] .bar-shape { filter: drop-shadow(0 2px 4px #d5a5462b); }
+.bars-svg .bar-node { cursor: crosshair; outline: none; }
+.bars-svg .bar-node:focus .bar-shape { filter: drop-shadow(0 0 3px #315e5266); }
+.bars-svg .bar-node[data-status='current'] .bar-shape,
+.bars-svg .bar-node[data-status='compare'] .bar-shape,
+.bars-svg .bar-node[data-status='best'] .bar-shape { filter: none; }
+.bars-svg .bar-node[data-status='current'] .bar-shape { stroke: #155d48; stroke-width: 1; }
+.bars-svg .bar-node[data-status='compare'] .bar-shape { stroke: #8b5b12; stroke-width: 1; }
+.bars-svg .bar-node[data-status='best'] .bar-shape { stroke: #0f4939; stroke-width: 1.5; }
 .bars-svg .area-label { fill: #315e52; font-size: 12px; font-weight: 750; paint-order: stroke; stroke: #fff; stroke-width: 4px; stroke-linejoin: round; }
 .bars-svg .best-label { fill: #16856b; font-size: 12px; font-weight: 750; }
-.bars-svg .bar-node[data-status='compare'] .bar-shape { filter: drop-shadow(0 3px 4px #d5a54644); }
-.bars-svg .bar-node[data-status='best'] .bar-shape { filter: drop-shadow(0 3px 4px #27845e35); }
 .canvas-caption { min-width: 0; display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 10px; padding: 7px 14px; border-top: 1px solid #edf1ef; }
 .operation-badge { display: inline-flex; align-items: center; min-height: 22px; padding: 0 8px; border: 1px solid #cfe7de; border-radius: 12px; color: #16745d; background: #f0f8f4; font-size: 10px; font-weight: 750; white-space: nowrap; }
 .canvas-caption p { display: -webkit-box; overflow: hidden; margin: 0; color: #49645b; font-size: 11px; line-height: 1.45; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
